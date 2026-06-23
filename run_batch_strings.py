@@ -39,6 +39,10 @@ def main():
         name_without_ext = os.path.splitext(filename)[0]
         final_mp3_path = os.path.join(output_dir, f"{name_without_ext}.mp3")
 
+        if os.path.exists(final_mp3_path):
+            print(f"[{idx}/{total}] Já existe, pulando: {name_without_ext}")
+            continue
+
         print(f"[{idx}/{total}] Processando: {name_without_ext}...")
 
         try:
