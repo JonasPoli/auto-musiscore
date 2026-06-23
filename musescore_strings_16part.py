@@ -250,6 +250,7 @@ STRINGS_16PART_PRESETS = {
 EXPR_BASE_VOLUME = 70
 EXPR_AMPLITUDE   = 35
 SAMPLING_STEP_TICKS = 40
+EXPR_CONTROL = 1
 
 # Coeficientes de normalização de volume para balancear timbres da biblioteca Muse Sounds
 VOLUME_MODIFIERS = {
@@ -270,6 +271,61 @@ VOLUME_MODIFIERS = {
 def seconds_to_ticks(seconds, tempo, ticks_per_beat):
     ticks_per_sec = ticks_per_beat * (1000000.0 / tempo)
     return int(seconds * ticks_per_sec)
+
+def ticks_to_seconds(ticks, tempo, ticks_per_beat):
+    ticks_per_sec = ticks_per_beat * (1000000.0 / tempo)
+    return ticks / ticks_per_sec
+
+def get_msg_priority(msg):
+    if msg.is_meta:
+        return 0
+    if msg.type == 'program_change':
+        return 1
+    if msg.type == 'control_change':
+        return 2
+    if msg.type == 'note_off':
+        return 3
+    if msg.type == 'note_on':
+        if hasattr(msg, 'velocity') and msg.velocity == 0:
+            return 3
+        return 4
+    return 5
+
+def get_cc_sample_ticks(duration, tempo, ticks_per_beat, is_after_pause):
+    steps = set()
+    steps.add(0)
+    steps.add(duration)
+    
+    if is_after_pause:
+        # High resolution sampling (every 10ms) inside the fade-in window (fixed 250ms)
+        fade_win_ms = 250.0
+        fade_win_ticks = int(seconds_to_ticks(fade_win_ms / 1000.0, tempo, ticks_per_beat))
+        
+        # 10ms in ticks
+        step_ticks = max(1, int(seconds_to_ticks(0.010, tempo, ticks_per_beat)))
+        
+        t = 0
+        while t < fade_win_ticks and t <= duration:
+            steps.add(t)
+            t += step_ticks
+        # Add the end of the fade window
+        if fade_win_ticks <= duration:
+            steps.add(fade_win_ticks)
+            
+        # Standard sampling for the remainder of the note
+        t = fade_win_ticks
+        while t < duration:
+            steps.add(t)
+            t += SAMPLING_STEP_TICKS
+    else:
+        # Standard sampling for the whole note
+        t = 0
+        while t < duration:
+            steps.add(t)
+            t += SAMPLING_STEP_TICKS
+            
+    return sorted(list(steps))
+
 
 def process_midi_to_16part_math(input_path, output_path, mapping, use_expression=True, speed=1.0):
     mid = mido.MidiFile(input_path)
@@ -455,7 +511,10 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                 delay_ticks = seconds_to_ticks(delay_sec, tempo, ticks_per_beat)
                 
                 note_info["on_time_new"] = max(0, on_time + delay_ticks)
-                note_info["off_time_new"] = max(note_info["on_time_new"] + 10, off_time + delay_ticks)
+                # A duração original deve ser preservada rigorosamente:
+                duration_original = off_time - on_time
+                # O novo off time acompanha o atraso, não cortando a nota prematuramente
+                note_info["off_time_new"] = max(note_info["on_time_new"] + 10, note_info["on_time_new"] + duration_original)
                 
                 # 2. Velocity
                 v_aleatorio = random.randint(-5, 5)
@@ -495,7 +554,7 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                     curr_note["off_time_new"] = max(curr_note["on_time_new"] + 10, next_note["on_time_new"] - 10)
 
             # Passagem 4: Geração das mensagens MIDI finais
-            for note_info in notes:
+            for i, note_info in enumerate(notes):
                 note_num = note_info["note"]
                 on_time = note_info["on_time"]
                 on_time_new = note_info["on_time_new"]
@@ -505,7 +564,14 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                 phrase_idx = note_info["phrase_idx"]
                 duration = off_time_new - on_time_new
                 
-                note_on_msg = mido.Message('note_on', channel=midi_channel, note=note_num, velocity=v_final, time=on_time_new)
+                # Identifica se é uma nota após pausa de pelo menos 0.2 tempos (ou início da faixa)
+                is_after_pause = (i == 0) or (on_time - notes[i-1]["off_time"] >= ticks_per_beat * 0.2)
+                
+                v_final_note = v_final
+                if is_after_pause:
+                    v_final_note = 10
+                
+                note_on_msg = mido.Message('note_on', channel=midi_channel, note=note_num, velocity=v_final_note, time=on_time_new)
                 note_off_msg = mido.Message('note_off', channel=midi_channel, note=note_num, velocity=0, time=off_time_new)
                 
                 processed_abs_events.append(note_on_msg)
@@ -561,6 +627,8 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                 if high_note_velocity > 0:
                     note_num_high = min(127, note_num + 12)
                     v_final_high = max(1, min(127, high_note_velocity))
+                    if is_after_pause:
+                        v_final_high = 10
                     
                     # Inicialização explícita do programa e do pan
                     if high_note_channel not in initialized_channels:
@@ -581,23 +649,48 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                     processed_abs_events.append(note_off_high)
                     
                 # 3. Curva de volume (CC11)
-                if use_expression and duration >= ticks_per_beat:
-                    for t_step in range(0, duration + 1, SAMPLING_STEP_TICKS):
-                        factor = math.sin(math.pi * (t_step / duration))
-                        e_val = (EXPR_BASE_VOLUME + EXPR_AMPLITUDE * factor) * total_mult
-                        e_final = max(0, min(127, int(e_val)))
+                # Adiciona curva se a duração for suficiente ou se necessitar do fade-in após pausa
+                if use_expression and (duration >= ticks_per_beat or is_after_pause):
+                    sample_steps = get_cc_sample_ticks(duration, tempo, ticks_per_beat, is_after_pause)
+                    for t_step in sample_steps:
+                        factor = math.sin(math.pi * (t_step / duration)) if duration > 0 else 0
+                        
+                        # 1. Calcula o alvo final da onda senoide
+                        target_e_val = (EXPR_BASE_VOLUME + EXPR_AMPLITUDE * factor) * total_mult
+                        e_val = target_e_val
+                        
+                        # 2. Desvincula o ataque inicial da curva de porcentagem
+                        if is_after_pause:
+                            t_ms = ticks_to_seconds(t_step, tempo, ticks_per_beat) * 1000.0
+                            if t_ms < 250.0:
+                                e_val = target_e_val * (t_ms / 250.0)
+                            if t_step == 0:
+                                e_val = 1.0
+                            
+                        e_final = max(1, min(127, int(e_val)))
                         
                         cc_time = on_time_new + t_step
                         cc_msg = mido.Message(
                             'control_change', 
                             channel=midi_channel, 
-                            control=11, 
+                            control=EXPR_CONTROL, 
                             value=e_final, 
                             time=cc_time
                         )
                         processed_abs_events.append(cc_msg)
                         
-            processed_abs_events.sort(key=lambda x: x.time)
+                        # Se houver nota oitavada ativa em outro canal, envia a expressão para ela também!
+                        if high_note_velocity > 0 and high_note_channel != midi_channel:
+                            cc_high = mido.Message(
+                                'control_change',
+                                channel=high_note_channel,
+                                control=EXPR_CONTROL,
+                                value=e_final,
+                                time=cc_time
+                            )
+                            processed_abs_events.append(cc_high)
+                        
+            processed_abs_events.sort(key=lambda x: (x.time, get_msg_priority(x)))
             
             rel_events = []
             prev_time = 0
