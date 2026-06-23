@@ -251,7 +251,18 @@ STRINGS_16PART_PRESETS = {
 EXPR_BASE_VOLUME = 70
 EXPR_AMPLITUDE   = 35
 SAMPLING_STEP_TICKS = 40
-EXPR_CONTROL = 1
+
+# Controles MIDI usados para a curva de expressão/fade.
+# 11 = Expression (padrão MIDI para volume musical)
+# 1  = Modulation/Dynamics em algumas bibliotecas, incluindo alguns fluxos com Muse Sounds.
+# Por padrão, enviamos nos dois para manter compatibilidade e garantir o fade real de volume.
+DEFAULT_EXPR_CONTROLS = [11, 1]
+DEFAULT_FADE_IN_SECONDS = 0.60
+DEFAULT_PAUSE_THRESHOLD_SECONDS = 0.45
+DEFAULT_FADE_RESOLUTION_MS = 10.0
+DEFAULT_ATTACK_VELOCITY_SCALE = 0.42
+DEFAULT_MIN_ATTACK_VELOCITY = 18
+DEFAULT_MAX_FADE_NOTE_RATIO = 0.85
 
 # Coeficientes de normalização de volume para balancear timbres da biblioteca Muse Sounds
 VOLUME_MODIFIERS = {
@@ -292,45 +303,97 @@ def get_msg_priority(msg):
         return 4
     return 5
 
-def get_cc_sample_ticks(duration, tempo, ticks_per_beat, is_after_pause):
+def clamp_midi(value):
+    return max(1, min(127, int(round(value))))
+
+def parse_cc_list(raw_value):
+    """Aceita "11", "1", "11,1" etc. e devolve lista única de CCs válidos."""
+    if raw_value is None:
+        return list(DEFAULT_EXPR_CONTROLS)
+    if isinstance(raw_value, (list, tuple)):
+        values = raw_value
+    else:
+        values = str(raw_value).replace(';', ',').split(',')
+    controls = []
+    for item in values:
+        item = str(item).strip()
+        if not item:
+            continue
+        cc = int(item)
+        if not 0 <= cc <= 127:
+            raise ValueError(f"Controle MIDI inválido: {cc}. Use valores entre 0 e 127.")
+        if cc not in controls:
+            controls.append(cc)
+    return controls or list(DEFAULT_EXPR_CONTROLS)
+
+def smoothstep(x):
+    """Curva suave 0→1, sem quina no início nem no fim do fade."""
+    x = max(0.0, min(1.0, float(x)))
+    return x * x * (3.0 - 2.0 * x)
+
+def get_effective_fade_ticks(duration, tempo, ticks_per_beat, fade_in_seconds, max_note_ratio=DEFAULT_MAX_FADE_NOTE_RATIO):
+    wanted = max(1, seconds_to_ticks(fade_in_seconds, tempo, ticks_per_beat))
+    # Evita que uma nota curta desapareça inteira no fade.
+    allowed_by_note = max(1, int(duration * max_note_ratio))
+    return max(1, min(wanted, allowed_by_note))
+
+def get_cc_sample_ticks(
+    duration,
+    tempo,
+    ticks_per_beat,
+    is_after_pause,
+    fade_in_seconds=DEFAULT_FADE_IN_SECONDS,
+    fade_resolution_ms=DEFAULT_FADE_RESOLUTION_MS,
+):
     steps = set()
     steps.add(0)
-    steps.add(duration)
-    
+    steps.add(max(0, duration))
+
+    if duration <= 0:
+        return [0]
+
     if is_after_pause:
-        # High resolution sampling (every 10ms) inside the fade-in window (fixed 250ms)
-        fade_win_ms = 250.0
-        fade_win_ticks = int(seconds_to_ticks(fade_win_ms / 1000.0, tempo, ticks_per_beat))
-        
-        # 10ms in ticks
-        step_ticks = max(1, int(seconds_to_ticks(0.010, tempo, ticks_per_beat)))
-        
+        fade_win_ticks = get_effective_fade_ticks(duration, tempo, ticks_per_beat, fade_in_seconds)
+        step_ticks = max(1, int(seconds_to_ticks(fade_resolution_ms / 1000.0, tempo, ticks_per_beat)))
+
+        # Alta resolução no ataque, pois é aqui que a nota estava soando seca.
         t = 0
         while t < fade_win_ticks and t <= duration:
             steps.add(t)
             t += step_ticks
-        # Add the end of the fade window
-        if fade_win_ticks <= duration:
-            steps.add(fade_win_ticks)
-            
-        # Standard sampling for the remainder of the note
+        steps.add(min(fade_win_ticks, duration))
+
+        # Depois do fade, volta para a amostragem normal da curva musical.
         t = fade_win_ticks
         while t < duration:
             steps.add(t)
             t += SAMPLING_STEP_TICKS
     else:
-        # Standard sampling for the whole note
         t = 0
         while t < duration:
             steps.add(t)
             t += SAMPLING_STEP_TICKS
-            
-    return sorted(list(steps))
+
+    return sorted(steps)
 
 
-def process_midi_to_16part_math(input_path, output_path, mapping, use_expression=True, speed=1.0, cc7_volume=35):
+def process_midi_to_16part_math(
+    input_path,
+    output_path,
+    mapping,
+    use_expression=True,
+    speed=1.0,
+    fade_in_seconds=DEFAULT_FADE_IN_SECONDS,
+    pause_threshold_seconds=DEFAULT_PAUSE_THRESHOLD_SECONDS,
+    fade_controls=None,
+    fade_resolution_ms=DEFAULT_FADE_RESOLUTION_MS,
+    attack_velocity_scale=DEFAULT_ATTACK_VELOCITY_SCALE,
+    min_attack_velocity=DEFAULT_MIN_ATTACK_VELOCITY,
+    cc7_volume=35,
+):
     mid = mido.MidiFile(input_path)
     ticks_per_beat = mid.ticks_per_beat
+    fade_controls = parse_cc_list(fade_controls)
     
     # Detectar canais originais do MIDI SATB
     active_channels = set()
@@ -357,6 +420,10 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                     measure_ticks = numerator * ticks_per_beat
             elif msg.type == 'set_tempo':
                 tempo = msg.tempo
+
+    # O arquivo de saída muda o tempo pelo parâmetro --speed.
+    # Portanto, qualquer cálculo em segundos precisa usar o tempo final/renderizado.
+    render_tempo = int(tempo / speed) if speed != 1.0 else tempo
                 
     # Configurações de fraseado e versos para o hino 002 ou detecção dinâmica
     if "002" in os.path.basename(input_path):
@@ -509,7 +576,7 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                 sub_num = int(conf["sub_key"].split("_")[-1])
                 delay_sec = (sub_num - 1) * 0.020
                     
-                delay_ticks = seconds_to_ticks(delay_sec, tempo, ticks_per_beat)
+                delay_ticks = seconds_to_ticks(delay_sec, render_tempo, ticks_per_beat)
                 
                 note_info["on_time_new"] = max(0, on_time + delay_ticks)
                 
@@ -568,15 +635,23 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                 phrase_idx = note_info["phrase_idx"]
                 duration = off_time_new - on_time_new
                 
-                # Identifica se é uma nota após pausa de pelo menos 0.2 tempos (ou início da faixa)
-                is_after_pause = (i == 0) or (on_time - notes[i-1]["off_time"] >= ticks_per_beat * 0.2)
+                # Detecta retomada após pausa de forma genérica, em segundos reais do áudio final.
+                # Isso funciona em lote para qualquer hino, sem depender de compasso/verso fixo.
+                gap_ticks = None if i == 0 else max(0, on_time - notes[i-1]["off_time"])
+                gap_seconds = None if gap_ticks is None else ticks_to_seconds(gap_ticks, render_tempo, ticks_per_beat)
+                is_after_pause = (i == 0) or (gap_seconds is not None and gap_seconds >= pause_threshold_seconds)
                 
-                # Identifica se é uma nota antes de pausa de pelo menos 0.2 tempos
-                is_before_pause = (i < len(notes) - 1) and (notes[i+1]["on_time"] - off_time >= ticks_per_beat * 0.2)
+                # Detecta se é uma nota antes de pausa de forma genérica
+                gap_next_ticks = None if i == len(notes) - 1 else max(0, notes[i+1]["on_time"] - off_time)
+                gap_next_seconds = None if gap_next_ticks is None else ticks_to_seconds(gap_next_ticks, render_tempo, ticks_per_beat)
+                is_before_pause = (gap_next_seconds is not None and gap_next_seconds >= pause_threshold_seconds)
                 
                 v_final_note = v_final
                 if is_after_pause:
-                    v_final_note = 10
+                    # Não usa velocity 10 fixa: em alguns bancos isso pode soar artificial.
+                    # Mantém ataque suave, mas ainda com corpo suficiente para cordas.
+                    v_final_note = max(min_attack_velocity, int(v_final * attack_velocity_scale))
+                    v_final_note = min(127, v_final_note)
                 
                 note_on_msg = mido.Message('note_on', channel=midi_channel, note=note_num, velocity=v_final_note, time=on_time_new)
                 note_off_msg = mido.Message('note_off', channel=midi_channel, note=note_num, velocity=0, time=off_time_new)
@@ -635,7 +710,8 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                     note_num_high = min(127, note_num + 12)
                     v_final_high = max(1, min(127, high_note_velocity))
                     if is_after_pause:
-                        v_final_high = 10
+                        v_final_high = max(min_attack_velocity, int(v_final_high * attack_velocity_scale))
+                        v_final_high = min(127, v_final_high)
                     
                     # Inicialização explícita do programa e do pan
                     if high_note_channel not in initialized_channels:
@@ -659,57 +735,64 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
                     processed_abs_events.append(note_on_high)
                     processed_abs_events.append(note_off_high)
                     
-                # 3. Curva de volume (CC11)
-                # Adiciona curva se a duração for suficiente ou se necessitar do fade-in após pausa
+                # 3. Curva de expressão/volume.
+                # Em retomadas após pausa, faz fade-in real de ~0.6s por CC11/CC1.
                 if use_expression and (duration >= ticks_per_beat or is_after_pause):
-                    sample_steps = get_cc_sample_ticks(duration, tempo, ticks_per_beat, is_after_pause)
+                    sample_steps = get_cc_sample_ticks(
+                        duration,
+                        render_tempo,
+                        ticks_per_beat,
+                        is_after_pause,
+                        fade_in_seconds=fade_in_seconds,
+                        fade_resolution_ms=fade_resolution_ms,
+                    )
+                    fade_win_ticks = get_effective_fade_ticks(duration, render_tempo, ticks_per_beat, fade_in_seconds)
+
                     for t_step in sample_steps:
                         factor = math.sin(math.pi * (t_step / duration)) if duration > 0 else 0
-                        
-                        # 1. Calcula o alvo final da onda senoide
                         target_e_val = (EXPR_BASE_VOLUME + EXPR_AMPLITUDE * factor) * total_mult
                         e_val = target_e_val
-                        
-                        # 2. Desvincula o ataque inicial da curva de porcentagem
+
                         if is_after_pause:
-                            t_ms = ticks_to_seconds(t_step, tempo, ticks_per_beat) * 1000.0
-                            if t_ms < 250.0:
-                                e_val = target_e_val * (t_ms / 250.0)
+                            fade_pos = 1.0 if fade_win_ticks <= 0 else (t_step / fade_win_ticks)
+                            fade_factor = smoothstep(fade_pos)
+                            e_val = target_e_val * fade_factor
                             if t_step == 0:
                                 e_val = 1.0
                                 
                         # 3. Aplica rampa de descida (fade-out) no final da nota se ela precede uma pausa
                         if is_before_pause:
                             fade_out_win_ms = 300.0
-                            fade_out_win_ticks = seconds_to_ticks(fade_out_win_ms / 1000.0, tempo, ticks_per_beat)
+                            fade_out_win_ticks = seconds_to_ticks(fade_out_win_ms / 1000.0, render_tempo, ticks_per_beat)
                             t_rem = duration - t_step
                             if t_rem < fade_out_win_ticks and fade_out_win_ticks > 0:
                                 ratio = t_rem / fade_out_win_ticks
                                 ratio_smooth = ratio * ratio * (3.0 - 2.0 * ratio)
                                 e_val = 1.0 + (e_val - 1.0) * ratio_smooth
-                            
-                        e_final = max(1, min(127, int(e_val * (cc7_volume / 100.0))))
-                        
+
+                        e_final = clamp_midi(e_val * (cc7_volume / 100.0))
                         cc_time = on_time_new + t_step
-                        cc_msg = mido.Message(
-                            'control_change', 
-                            channel=midi_channel, 
-                            control=EXPR_CONTROL, 
-                            value=e_final, 
-                            time=cc_time
-                        )
-                        processed_abs_events.append(cc_msg)
-                        
-                        # Se houver nota oitavada ativa em outro canal, envia a expressão para ela também!
-                        if high_note_velocity > 0 and high_note_channel != midi_channel:
-                            cc_high = mido.Message(
+
+                        for control_id in fade_controls:
+                            cc_msg = mido.Message(
                                 'control_change',
-                                channel=high_note_channel,
-                                control=EXPR_CONTROL,
+                                channel=midi_channel,
+                                control=control_id,
                                 value=e_final,
                                 time=cc_time
                             )
-                            processed_abs_events.append(cc_high)
+                            processed_abs_events.append(cc_msg)
+
+                            # Se houver nota oitavada ativa em outro canal, envia a expressão para ela também.
+                            if high_note_velocity > 0 and high_note_channel != midi_channel:
+                                cc_high = mido.Message(
+                                    'control_change',
+                                    channel=high_note_channel,
+                                    control=control_id,
+                                    value=e_final,
+                                    time=cc_time
+                                )
+                                processed_abs_events.append(cc_high)
                         
             processed_abs_events.sort(key=lambda x: (x.time, get_msg_priority(x)))
             
@@ -773,33 +856,34 @@ def inject_dynamic_to_mscx(mscx_path, velocity_value):
                     
     tree.write(mscx_path, encoding='UTF-8', xml_declaration=True)
 
-def render_score(midi_path, output_mp3, soundfonts_dir, cc7_volume=35):
+def render_score(midi_path, output_mp3, soundfonts_dir, musescore_bin, cc7_volume=35):
     my_env = os.environ.copy()
     my_env["MUSESAMPLER_INSTRUMENT_FOLDER"] = soundfonts_dir
-    
+
+    if not os.path.exists(musescore_bin):
+        raise FileNotFoundError(f"MuseScore não encontrado em: {musescore_bin}")
+
     # Define temporary MSCX path
     base_path = os.path.splitext(midi_path)[0]
     mscx_path = base_path + "_temp.mscx"
-    
-    mscore_bin = "/Applications/MuseScore 4.app/Contents/MacOS/mscore"
-    
+
     try:
         # 1. Export MIDI to MSCX
         subprocess.run([
-            mscore_bin,
+            musescore_bin,
             "-o", mscx_path,
             midi_path
         ], env=my_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        
+
         # 2. Inject dynamic into MSCX
         try:
             inject_dynamic_to_mscx(mscx_path, cc7_volume)
         except Exception as e:
             print(f"\n[AVISO] Falha ao injetar dinâmica no XML ({e}). Renderizando padrão...")
-            
+
         # 3. Render MSCX to MP3 with MuseSounds sound profile
         subprocess.run([
-            mscore_bin,
+            musescore_bin,
             "--sound-profile", "MuseSounds",
             "-o", output_mp3,
             mscx_path
@@ -811,13 +895,32 @@ def render_score(midi_path, output_mp3, soundfonts_dir, cc7_volume=35):
 
 def main():
     ap = argparse.ArgumentParser(description="MuseScore 4 Math Orchestrator: Coral 16 Instrumentos")
-    ap.add_argument("--midi",       default=None,           help="MIDI de entrada específico")
+    ap.add_argument("--midi",       default=None,           help="MIDI de entrada específico. Use para testar apenas 1 arquivo.")
+    ap.add_argument("--midi-glob",  default="mid/*.mid",   help="Padrão de busca para lote quando --midi não for usado. Ex.: 'mid/*.mid'")
     ap.add_argument("--preset",     type=int, default=1,    help="Número do preset de 16 cordas (1 a 9)")
-    ap.add_argument("--output",     default="output_strings_16part", help="Pasta de saída para os arquivos MP3")
-    ap.add_argument("--soundfonts", default="/Users/jonaspoli/Documents/MuseScore4/SoundFonts/Muse Hub Instruments", 
+    ap.add_argument("--output",     default="output_strings_16part", help="Pasta de saída para os arquivos MIDI/MP3")
+    ap.add_argument("--soundfonts", default="/Users/jonaspoli/Documents/MuseScore4/SoundFonts/Muse Hub Instruments",
                     help="Caminho para os instrumentos das Muse Sounds")
+    ap.add_argument("--musescore-bin", default="/Applications/MuseScore 4.app/Contents/MacOS/mscore",
+                    help="Caminho do executável do MuseScore 4")
     ap.add_argument("--speed",       type=float, default=0.9, help="Fator de velocidade (padrão 0.9 = 90% da velocidade original)")
     ap.add_argument("--volume",     type=int, default=35,    help="Fator de volume geral em porcentagem para evitar clipar (1 a 100). Padrão: 35")
+
+    # Fade-in genérico para retomadas depois de pausa.
+    ap.add_argument("--fade-in", type=float, default=DEFAULT_FADE_IN_SECONDS,
+                    help="Duração do fade-in após pausa, em segundos. Padrão: 0.60")
+    ap.add_argument("--pause-threshold", type=float, default=DEFAULT_PAUSE_THRESHOLD_SECONDS,
+                    help="Pausa mínima, em segundos, para aplicar o fade-in. Padrão: 0.45")
+    ap.add_argument("--fade-controls", default=",".join(map(str, DEFAULT_EXPR_CONTROLS)),
+                    help="CCs MIDI usados na curva. Padrão: 11,1. Use 11 se quiser apenas Expression.")
+    ap.add_argument("--fade-resolution-ms", type=float, default=DEFAULT_FADE_RESOLUTION_MS,
+                    help="Resolução dos pontos do fade, em milissegundos. Padrão: 10")
+    ap.add_argument("--attack-velocity-scale", type=float, default=DEFAULT_ATTACK_VELOCITY_SCALE,
+                    help="Multiplicador da velocity da primeira nota após pausa. Padrão: 0.42")
+    ap.add_argument("--min-attack-velocity", type=int, default=DEFAULT_MIN_ATTACK_VELOCITY,
+                    help="Velocity mínima da primeira nota após pausa. Padrão: 18")
+    ap.add_argument("--no-render", action="store_true",
+                    help="Gera apenas o MIDI orquestrado, sem chamar o MuseScore para criar MP3.")
     args = ap.parse_args()
     
     os.makedirs(args.output, exist_ok=True)
@@ -830,30 +933,47 @@ def main():
     print("════════════════════════════════════════════════════════════")
     print(f"  Orquestrador 16 Cordas — Preset {args.preset}: {preset['name']}")
     print(f"  Descrição: {preset['desc']}")
-    print(f"  Velocidade: {args.speed}x (90%)")
+    print(f"  Velocidade: {args.speed}x ({int(round(args.speed * 100))}%)")
+    print(f"  Fade após pausa: {args.fade_in:.2f}s | pausa mínima: {args.pause_threshold:.2f}s | CCs: {args.fade_controls}")
     print("════════════════════════════════════════════════════════════\n")
     
-    # Coleta arquivos MIDI
-    midi_files = [args.midi] if args.midi else sorted(glob.glob("mid/*.mid"))
+    # Coleta arquivos MIDI: 1 arquivo em teste ou lote completo para centenas de hinos.
+    midi_files = [args.midi] if args.midi else sorted(glob.glob(args.midi_glob))
     total = len(midi_files)
     
     if total == 0:
-        print("Nenhum arquivo MIDI encontrado em 'mid/'.")
+        print(f"Nenhum arquivo MIDI encontrado usando o padrão: {args.midi_glob}")
         sys.exit(1)
         
     for idx, path in enumerate(midi_files, 1):
         name = os.path.splitext(os.path.basename(path))[0]
-        out_mp3 = os.path.join(args.output, f"{name}_preset{args.preset}_16part_speed90.mp3")
-        out_mid = os.path.join(args.output, f"{name}_preset{args.preset}_16part_speed90.mid")
+        speed_suffix = f"speed{int(round(args.speed * 100))}"
+        out_mp3 = os.path.join(args.output, f"{name}_preset{args.preset}_16part_{speed_suffix}.mp3")
+        out_mid = os.path.join(args.output, f"{name}_preset{args.preset}_16part_{speed_suffix}.mid")
         
         print(f"[{idx}/{total}] ▶ {name}...", end="", flush=True)
         
         try:
-            process_midi_to_16part_math(path, out_mid, preset["map"], use_expression=True, speed=args.speed, cc7_volume=args.volume)
+            process_midi_to_16part_math(
+                path,
+                out_mid,
+                preset["map"],
+                use_expression=True,
+                speed=args.speed,
+                fade_in_seconds=args.fade_in,
+                pause_threshold_seconds=args.pause_threshold,
+                fade_controls=args.fade_controls,
+                fade_resolution_ms=args.fade_resolution_ms,
+                attack_velocity_scale=args.attack_velocity_scale,
+                min_attack_velocity=args.min_attack_velocity,
+                cc7_volume=args.volume,
+            )
             
-            render_score(out_mid, out_mp3, args.soundfonts, cc7_volume=args.volume)
-            
-            print(" ✓ concluído")
+            if args.no_render:
+                print(" ✓ MIDI gerado")
+            else:
+                render_score(out_mid, out_mp3, args.soundfonts, args.musescore_bin, cc7_volume=args.volume)
+                print(" ✓ MP3 concluído")
         except Exception as e:
             print(f" ✗ FALHOU (erro: {e})")
  

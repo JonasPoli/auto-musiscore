@@ -22,3 +22,22 @@ output/
 .DS_Store
 temp_*.mid
 temp_*.mp3
+**/._*
+._*
+
+# MuseScore extractions and settings
+META-INF/
+audiosettings.json
+automation.json
+viewsettings.json
+score_style.mss
+
+# Generated audio/midi test files at root
+/*.mp3
+/*.mid
+
+# Temporary / Ignored directories
+Thumbnails/
+string/
+temp_orchestra/
+temp_orchestra/*
