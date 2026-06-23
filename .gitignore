@@ -1,0 +1,24 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Modelos volumosos
+models/
+
+# Saídas de áudio/MIDI geradas pelos processos
+output*/
+brass/
+piano eqinox/
+output/
+
+# Logs e arquivos de sistema
+*.log
+.DS_Store
+temp_*.mid
+temp_*.mp3
