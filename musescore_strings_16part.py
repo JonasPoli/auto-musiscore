@@ -774,6 +774,7 @@ def inject_dynamic_to_mscx(mscx_path, velocity_value):
     tree.write(mscx_path, encoding='UTF-8', xml_declaration=True)
 
 def render_score(midi_path, output_mp3, soundfonts_dir, cc7_volume=35):
+    import time
     my_env = os.environ.copy()
     my_env["MUSESAMPLER_INSTRUMENT_FOLDER"] = soundfonts_dir
     
@@ -784,12 +785,21 @@ def render_score(midi_path, output_mp3, soundfonts_dir, cc7_volume=35):
     mscore_bin = "/Applications/MuseScore 4.app/Contents/MacOS/mscore"
     
     try:
-        # 1. Export MIDI to MSCX
-        subprocess.run([
-            mscore_bin,
-            "-o", mscx_path,
-            midi_path
-        ], env=my_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        # 1. Export MIDI to MSCX (com retentativa caso falhe)
+        for attempt in range(1, 4):
+            try:
+                subprocess.run([
+                    mscore_bin,
+                    "-f",
+                    "-o", mscx_path,
+                    midi_path
+                ], env=my_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                if os.path.exists(mscx_path):
+                    break
+            except Exception as e:
+                if attempt == 3:
+                    raise e
+                time.sleep(2)
         
         # 2. Inject dynamic into MSCX
         try:
@@ -797,17 +807,37 @@ def render_score(midi_path, output_mp3, soundfonts_dir, cc7_volume=35):
         except Exception as e:
             print(f"\n[AVISO] Falha ao injetar dinâmica no XML ({e}). Renderizando padrão...")
             
-        # 3. Render MSCX to MP3 with MuseSounds sound profile
-        subprocess.run([
-            mscore_bin,
-            "--sound-profile", "MuseSounds",
-            "-o", output_mp3,
-            mscx_path
-        ], env=my_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        # 3. Render MSCX to MP3 with MuseSounds sound profile (com retentativas)
+        for attempt in range(1, 4):
+            try:
+                # Se o arquivo de áudio já existir de uma tentativa anterior parcial, remove para garantir
+                if os.path.exists(output_mp3):
+                    os.remove(output_mp3)
+                
+                subprocess.run([
+                    mscore_bin,
+                    "-f",
+                    "--sound-profile", "MuseSounds",
+                    "-o", output_mp3,
+                    mscx_path
+                ], env=my_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                
+                # Verifica se o arquivo de fato foi gerado e tem tamanho maior que 0
+                if os.path.exists(output_mp3) and os.path.getsize(output_mp3) > 1000:
+                    break
+                else:
+                    raise FileNotFoundError("Arquivo MP3 não foi gerado ou está vazio")
+            except Exception as e:
+                if attempt == 3:
+                    raise e
+                time.sleep(3)
     finally:
         # 4. Clean up temporary MSCX file
         if os.path.exists(mscx_path):
-            os.remove(mscx_path)
+            try:
+                os.remove(mscx_path)
+            except Exception:
+                pass
 
 def main():
     ap = argparse.ArgumentParser(description="MuseScore 4 Math Orchestrator: Coral 16 Instrumentos")

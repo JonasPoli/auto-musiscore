@@ -39,9 +39,16 @@ def main():
         name_without_ext = os.path.splitext(filename)[0]
         final_mp3_path = os.path.join(output_dir, f"{name_without_ext}.mp3")
 
+        import datetime
+        cutoff_epoch = datetime.datetime(2026, 6, 23, 15, 30, 0).timestamp()
+
         if os.path.exists(final_mp3_path):
-            print(f"[{idx}/{total}] Já existe, pulando: {name_without_ext}")
-            continue
+            mtime = os.path.getmtime(final_mp3_path)
+            if mtime >= cutoff_epoch:
+                # Já é um arquivo orquestrado com Preset 1
+                continue
+            else:
+                print(f"[{idx}/{total}] Arquivo antigo (Preset 9) detectado. Re-processando: {name_without_ext}...")
 
         print(f"[{idx}/{total}] Processando: {name_without_ext}...")
 
