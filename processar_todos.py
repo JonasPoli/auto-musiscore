@@ -26,9 +26,12 @@ def parse_hino_id(filename):
     num = int(match.group())
     return f"C{num}" if is_coro else str(num)
 
-def process_file(mp3_path, output_dir, hino_id):
+def process_file(mp3_path, output_dir, hino_id, force=False):
     output_path = output_dir / f"hino-{hino_id}.json"
     
+    if not force and output_path.exists():
+        return True, mp3_path.name, "skipped"
+        
     cmd = [
         str(VENV_PYTHON),
         str(ROOT / "sincronizar_letras.py"),
@@ -44,6 +47,11 @@ def process_file(mp3_path, output_dir, hino_id):
         return False, mp3_path.name, result.stderr
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Processa todos os arquivos de brass e string.")
+    parser.add_argument("--force", action="store_true", help="Forçar reprocessamento de todos os arquivos, mesmo os que já possuem JSON.")
+    args = parser.parse_args()
+
     if not VENV_PYTHON.exists():
         print(f"[erro] Virtual environment python não encontrado em: {VENV_PYTHON}")
         sys.exit(1)
@@ -87,7 +95,7 @@ def main():
     print(f"Iniciando processamento paralelo com {os.cpu_count()} workers...")
     
     with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-        futures = {executor.submit(process_file, t[0], t[1], t[2]): t for t in tasks}
+        futures = {executor.submit(process_file, t[0], t[1], t[2], args.force): t for t in tasks}
         
         for idx, future in enumerate(as_completed(futures), 1):
             t = futures[future]
@@ -97,7 +105,10 @@ def main():
             
             if success:
                 success_count += 1
-                print(f"[{idx}/{total_tasks}] ✓ [{category}] Hino {hino_id} ({filename})")
+                if err == "skipped":
+                    print(f"[{idx}/{total_tasks}] ⏭️ [skip] [{category}] Hino {hino_id} ({filename})")
+                else:
+                    print(f"[{idx}/{total_tasks}] ✓ [{category}] Hino {hino_id} ({filename})")
             else:
                 fail_count += 1
                 failures.append((filename, err))

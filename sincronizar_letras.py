@@ -100,8 +100,12 @@ def carregar_letra_hino(hino_id, txt_path: Path = None) -> dict:
                 is_coro_atual = False
             continue
 
-        if re.match(r"^coro:?$", linha, flags=re.IGNORECASE):
+        coro_match = re.match(r"^coro\b:?\s*(.*)$", linha, flags=re.IGNORECASE)
+        if coro_match:
             is_coro_atual = True
+            resto = coro_match.group(1).strip()
+            if resto:
+                estrofe_atual.append(resto)
             continue
         
         linha_limpa = re.sub(r"^\d+\.\s*", "", linha).strip()
@@ -357,7 +361,14 @@ def main():
     parser.add_argument("--mp3", required=True, help="Caminho para o arquivo MP3 gerado (orquestra)")
     parser.add_argument("--txt", help="Caminho explícito para o TXT da letra")
     parser.add_argument("--output", required=True, help="Caminho para salvar o JSON de saída")
+    parser.add_argument("--skip-existing", action="store_true", help="Pular processamento se o arquivo de saída já existir")
     args = parser.parse_args()
+
+    # Se skip-existing estiver ativo e o arquivo de saída já existir, pula imediatamente
+    output_path = Path(args.output)
+    if args.skip_existing and output_path.exists():
+        print(f"⏭️ [skip] Arquivo de saída já existe: {output_path}. Pulando.")
+        return
 
     hino_id = args.hino
 

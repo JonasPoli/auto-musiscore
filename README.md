@@ -107,3 +107,95 @@ python run_batch_strings.py
 3.  Executa o pós-processamento de suavização acústica nos MP3s com lookback de 200ms.
 4.  Copia os arquivos finais suavizados para a pasta **`string/`** com o **mesmo nome do arquivo MIDI original**.
 5.  Limpa todos os arquivos temporários criados no processo.
+
+---
+
+## 🎤 5. Sincronização de Letras (MIDI + MP3 + TXT ➔ JSON)
+
+O script **[sincronizar_letras.py](file:///Volumes/Dados/work/ia-music/sincronizar_letras.py)** realiza o alinhamento temporal inteligente de letras contidas em `hinos_txt/letras_separadas` com os áudios gerados em MP3 e a melodia do MIDI.
+
+### Uso para um Hino Individual
+Você pode executar o sincronizador diretamente especificando o ID do hino (que será buscado no índice), o áudio MP3 correspondente e o destino do JSON:
+```bash
+python sincronizar_letras.py --hino 147 --mp3 brass/147- É bom louvar ao Criador.mp3 --output output/lyrics/brass/hino-147.json
+```
+
+Também é possível especificar os caminhos do MIDI e TXT de forma explícita:
+```bash
+python sincronizar_letras.py --midi mid/001-Cristo.mid --mp3 output/001.mp3 --txt hinos_txt/letras_separadas/hino-001.txt --output output/hino-001.json
+```
+
+Use a flag `--skip-existing` para pular o processamento se o arquivo JSON final de saída já existir:
+```bash
+python sincronizar_letras.py --hino 147 --mp3 brass/147- É bom louvar ao Criador.mp3 --output output/lyrics/brass/hino-147.json --skip-existing
+```
+
+### Sincronização em Lote (Apontando para Pastas)
+
+Como o script `sincronizar_letras.py` opera em arquivos individuais, você pode processar pastas inteiras de MP3 e salvar os JSONs de saída em uma pasta dedicada de duas maneiras:
+
+#### A. Usando os scripts de lote inclusos
+*   **[processar_todos.py](file:///Volumes/Dados/work/ia-music/processar_todos.py)**: Escaneia as pastas de áudio `brass/` e `string/` do repositório, mapeia seus IDs e salva os resultados em `output/lyrics/brass/` e `output/lyrics/string/`.
+    ```bash
+    python processar_todos.py
+    ```
+    *Por padrão, o processamento é incremental (pula arquivos já sincronizados). Use `--force` para reprocessar tudo:*
+    ```bash
+    python processar_todos.py --force
+    ```
+
+*   **[processar_jonas.py](file:///Volumes/Dados/work/ia-music/processar_jonas.py)**: Escaneia pastas de áudio externas configuradas no script e gera os arquivos JSON correspondentes diretamente ao lado de cada MP3.
+    ```bash
+    python processar_jonas.py
+    ```
+    *Também aceita a flag `--force` para forçar o reprocessamento de tudo.*
+
+#### B. Usando um loop shell para pastas personalizadas
+Para processar uma pasta arbitrária de MP3 (`/caminho/pasta_mp3`) e salvar os resultados em outra pasta (`/caminho/pasta_saida`), execute o seguinte loop no terminal (Linux/macOS):
+
+```bash
+for mp3 in "/caminho/pasta_mp3"/*.mp3; do
+    [ -e "$mp3" ] || continue
+    filename=$(basename "$mp3")
+    # Extrai o ID do hino do nome do arquivo (ex: "147" de "147- É bom louvar...")
+    hino_id=$(echo "$filename" | grep --color=never -oE '[0-9]+' | head -n 1)
+    if [ -n "$hino_id" ]; then
+        python sincronizar_letras.py --hino "$hino_id" --mp3 "$mp3" --output "/caminho/pasta_saida/hino-$hino_id.json" --skip-existing
+    fi
+done
+```
+
+```bash
+# Entra no diretório dos arquivos MP3
+# cd /Volumes/Dados/documentos-jonas/hinario/mp3\ dp\ jonas/string
+# rode isso estando nas pasta que contem os MP3
+#
+for mp3 in *.mp3; do
+    [ -e "$mp3" ] || continue
+    num=$(echo "$mp3" | grep --color=never -oE '[0-9]+' | head -n 1)
+    if [ -n "$num" ]; then
+        if echo "$mp3" | grep -iq "coro"; then
+            hino_id="C$num"
+            # Busca o arquivo MIDI correspondente ao coro no projeto
+            midi=$(ls /Volumes/Dados/work/ia-music/mid/*[Cc]oro*"$num"*.mid 2>/dev/null | head -n 1)
+        else
+            hino_id="$num"
+            # Busca o arquivo MIDI usando o número direto (já tem os 3 dígitos do nome do MP3)
+            midi=$(ls /Volumes/Dados/work/ia-music/mid/"$num"-*.mid 2>/dev/null | head -n 1)
+        fi
+
+        # Se encontrou o MIDI, executa passando o caminho explícito
+        if [ -n "$midi" ]; then
+            /Volumes/Dados/work/ia-music/.venv/bin/python /Volumes/Dados/work/ia-music/sincronizar_letras.py \
+                --hino "$hino_id" \
+                --midi "$midi" \
+                --mp3 "$mp3" \
+                --output "${mp3%.mp3}.json" \
+                --skip-existing
+        else
+            echo "⚠️ MIDI não encontrado para Hino $hino_id ($mp3)"
+        fi
+    fi
+done
+ 
+```
