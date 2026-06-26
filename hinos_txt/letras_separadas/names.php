@@ -16,23 +16,31 @@ foreach ($arquivos as $arquivo) {
 
     $conteudo = file_get_contents($arquivo);
 
-    if (stripos($conteudo, "Coro") !== false or stripos($conteudo, "Final") !== false) {
-        $blocos = explode("\n\n", $conteudo);
-        $contador = 1;
+    $conteudo_limpo = trim($conteudo);
+    $blocos = explode("\n\n", $conteudo_limpo);
+    $total_blocos = count($blocos);
+    $alterou = false;
 
-        foreach ($blocos as $indice => $bloco) {
-            $bloco_limpo = trim($bloco);
+    foreach ($blocos as $indice => $bloco) {
+        $bloco_limpo = trim($bloco);
 
-            if ($indice === 0 || $bloco_limpo === "") {
-                continue;
-            }
-
-            if (!preg_match('/^(\d+|Coro|Final)/i', $bloco_limpo)) {
-                $blocos[$indice] = $contador . ". " . $bloco;
-                $contador++;
-            }
+        if ($indice === 0 || $bloco_limpo === "") {
+            continue;
         }
 
+        if (!preg_match('/^(\d+|Coro|Final)/i', $bloco_limpo)) {
+
+            if ($indice === $total_blocos - 1) {
+                $blocos[$indice] = "Final: " . $bloco;
+                $alterou = true;
+            } elseif ($indice === 2) {
+                $blocos[$indice] = "Coro: " . $bloco;
+                $alterou = true;
+            }
+        }
+    }
+
+    if ($alterou) {
         $novo_conteudo = implode("\n\n", $blocos);
         file_put_contents($arquivo, $novo_conteudo);
         $total_alterado++;
@@ -41,3 +49,4 @@ foreach ($arquivos as $arquivo) {
 
 echo "Processo finalizado com sucesso.\n";
 echo "Total de arquivos alterados: " . $total_alterado . "\n";
+?>
