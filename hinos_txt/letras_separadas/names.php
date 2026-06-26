@@ -16,7 +16,7 @@ foreach ($arquivos as $arquivo) {
 
     $conteudo = file_get_contents($arquivo);
 
-    if (stripos($conteudo, "Coro") !== false) {
+    if (stripos($conteudo, "Coro") !== false or stripos($conteudo, "Final") !== false) {
         $blocos = explode("\n\n", $conteudo);
         $contador = 1;
 
@@ -27,7 +27,7 @@ foreach ($arquivos as $arquivo) {
                 continue;
             }
 
-            if (!preg_match('/^(\d+|Coro)/i', $bloco_limpo)) {
+            if (!preg_match('/^(\d+|Coro|Final)/i', $bloco_limpo)) {
                 $blocos[$indice] = $contador . ". " . $bloco;
                 $contador++;
             }
