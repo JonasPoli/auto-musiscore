@@ -7,8 +7,6 @@ if (empty($arquivos)) {
     exit;
 }
 
-$total_alterado = 0;
-
 foreach ($arquivos as $arquivo) {
     if (!file_exists($arquivo)) {
         continue;
@@ -16,37 +14,30 @@ foreach ($arquivos as $arquivo) {
 
     $conteudo = file_get_contents($arquivo);
 
-    $conteudo_limpo = trim($conteudo);
-    $blocos = explode("\n\n", $conteudo_limpo);
-    $total_blocos = count($blocos);
-    $alterou = false;
+    // Normaliza as quebras de linha para evitar problemas de leitura
+    $conteudo = str_replace("\r\n", "\n", $conteudo);
 
-    foreach ($blocos as $indice => $bloco) {
+    $blocos = explode("\n\n", trim($conteudo));
+    $contagem_linhas = array();
+
+    foreach ($blocos as $bloco) {
         $bloco_limpo = trim($bloco);
 
-        if ($indice === 0 || $bloco_limpo === "") {
-            continue;
-        }
-
-        if (!preg_match('/^(\d+|Coro|Final)/i', $bloco_limpo)) {
-
-            if ($indice === $total_blocos - 1) {
-                $blocos[$indice] = "Final: " . $bloco;
-                $alterou = true;
-            } elseif ($indice === 2) {
-                $blocos[$indice] = "Coro: " . $bloco;
-                $alterou = true;
-            }
+        // Verifica se o parágrafo começa com um número
+        if (preg_match('/^\d+/', $bloco_limpo)) {
+            // Conta quantas linhas existem neste parágrafo
+            $linhas = explode("\n", $bloco_limpo);
+            $contagem_linhas[] = count($linhas);
         }
     }
 
-    if ($alterou) {
-        $novo_conteudo = implode("\n\n", $blocos);
-        file_put_contents($arquivo, $novo_conteudo);
-        $total_alterado++;
+    // Se houver parágrafos numerados, verifica se os tamanhos são diferentes
+    if (count($contagem_linhas) > 1) {
+        $valores_unicos = array_unique($contagem_linhas);
+
+        if (count($valores_unicos) > 1) {
+            echo $arquivo . "\n";
+        }
     }
 }
-
-echo "Processo finalizado com sucesso.\n";
-echo "Total de arquivos alterados: " . $total_alterado . "\n";
 ?>

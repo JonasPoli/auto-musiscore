@@ -6,6 +6,8 @@ import argparse
 import subprocess
 import glob
 import sys
+import zipfile
+import json
 
 # ─── Configurações e Presets de Metais (8 Partes) ─────────────────────────────
 BRASS_PRESETS = {
@@ -370,14 +372,15 @@ def process_midi_to_8part_math(input_path, output_path, mapping, use_expression=
         meta_track.append(msg.copy(time=delta))
         prev_meta_time = msg.time
                 
-    # Configuração dos 8 instrumentos e da espacialização (Lado 1 esq = 48, Lado 2 dir = 80)
+    # Configuração dos 9 instrumentos e da espacialização (Lado 1 esq = 48, Lado 2 dir = 80, Centro = 64)
     instruments_config = [
         {"voice": "Soprano",   "pan": 48, "inst": mapping["Soprano_1"]},
         {"voice": "Soprano",   "pan": 80, "inst": mapping["Soprano_2"]},
         {"voice": "Contralto", "pan": 48, "inst": mapping["Contralto_1"]},
         {"voice": "Contralto", "pan": 80, "inst": mapping["Contralto_2"]},
-        {"voice": "Tenor",     "pan": 48, "inst": mapping["Tenor_1"]},
-        {"voice": "Tenor",     "pan": 80, "inst": mapping["Tenor_2"]},
+        {"voice": "Tenor",     "pan": 48, "inst": {"name": "Trombones", "program": 57}},
+        {"voice": "Tenor",     "pan": 80, "inst": {"name": "Trombones", "program": 57}},
+        {"voice": "Tenor",     "pan": 64, "inst": {"name": "Trombones", "program": 57}}, # Trilha extra com Trombones no centro para reforçar o tenor
         {"voice": "Baixo",     "pan": 48, "inst": mapping["Baixo_1"]},
         {"voice": "Baixo",     "pan": 80, "inst": mapping["Baixo_2"]}
     ]
@@ -394,6 +397,10 @@ def process_midi_to_8part_math(input_path, output_path, mapping, use_expression=
         voice_track.append(mido.MetaMessage('track_name', name=inst["name"], time=0))
         voice_track.append(mido.Message('program_change', channel=midi_channel, program=inst["program"], time=0))
         voice_track.append(mido.Message('control_change', channel=midi_channel, control=10, value=conf["pan"], time=0))
+        
+        # Volume do canal (CC 7) - Maximizando o volume do tenor para 127 e atenuando os outros para 75
+        vol_val = 127 if voice_name == "Tenor" else 75
+        voice_track.append(mido.Message('control_change', channel=midi_channel, control=7, value=vol_val, time=0))
         
         # Encontra qual canal original corresponde a esta voz
         target_channel = None
@@ -468,9 +475,12 @@ def process_midi_to_8part_math(input_path, output_path, mapping, use_expression=
                     
                 v_novo = v_base + v_aleatorio + v_acento
                 
-                # Reduz em 10% se for Contralto ou Tenor
-                if voice_name in ["Contralto", "Tenor"]:
+                # Reduz em 10% se for Contralto
+                if voice_name == "Contralto":
                     v_novo = int(v_novo * 0.9)
+                # Dá um boost forte para o Tenor para garantir brilho e ataque (Trombone/Euphonium)
+                elif voice_name == "Tenor":
+                    v_novo = int(v_novo * 1.25) + 15
                     
                 v_final = max(1, min(127, v_novo))
                 
@@ -488,6 +498,8 @@ def process_midi_to_8part_math(input_path, output_path, mapping, use_expression=
                         # E(t) = E_base + A * sin(pi * (t / D))
                         factor = math.sin(math.pi * (t_step / duration))
                         e_val = EXPR_BASE_VOLUME + EXPR_AMPLITUDE * factor
+                        if voice_name == "Tenor":
+                            e_val += 35
                         e_final = max(0, min(127, int(e_val)))
                         
                         cc_time = on_time_new + t_step
@@ -518,6 +530,222 @@ def process_midi_to_8part_math(input_path, output_path, mapping, use_expression=
 
 
 # ─── Renderização ─────────────────────────────────────────────────────────────
+
+def apply_mixer_boost(mscz_path, mapping):
+    """
+    Unzips the .mscz file, injects custom audio settings (volume and instrument selection)
+    for the Tenor and Soprano tracks into audiosettings.json, and zips it back.
+    """
+    temp_path = mscz_path + ".tmp"
+    
+    # Soprano instrument data mapping (Flugelhorn/Cornet map to Trumpet to avoid sample range limits causing muting on high notes)
+    muse_brass_sounds = {
+        "Trumpet": {
+            "instrumentId": "bb-trumpet",
+            "museName": "Trumpet",
+            "museUID": "110",
+            "playbackSetupData": "winds.trumpet"
+        },
+        "Flugelhorn": {
+            "instrumentId": "bb-trumpet",
+            "museName": "Trumpet",
+            "museUID": "110",
+            "playbackSetupData": "winds.trumpet"
+        },
+        "Cornet": {
+            "instrumentId": "bb-trumpet",
+            "museName": "Trumpet",
+            "museUID": "110",
+            "playbackSetupData": "winds.trumpet"
+        },
+        "French Horn": {
+            "instrumentId": "horn",
+            "museName": "Horn in F",
+            "museUID": "108",
+            "playbackSetupData": "winds.horn.french:in_f"
+        }
+    }
+    
+    sop1_name = mapping.get("Soprano_1", {}).get("name", "Trumpet")
+    sop2_name = mapping.get("Soprano_2", {}).get("name", "Trumpet")
+    
+    sop1_meta = muse_brass_sounds.get(sop1_name, muse_brass_sounds["Trumpet"])
+    sop2_meta = muse_brass_sounds.get(sop2_name, muse_brass_sounds["Trumpet"])
+    
+    injected_tracks = [
+        # Soprano 1 (Part 1, left)
+        {
+          "in": {
+            "resourceMeta": {
+              "attributes": {
+                "museCategory": "Muse Brass",
+                "museName": sop1_meta["museName"],
+                "musePack": "Muse Brass",
+                "museUID": sop1_meta["museUID"],
+                "museVendorName": "Muse",
+                "playbackSetupData": sop1_meta["playbackSetupData"]
+              },
+              "hasNativeEditorSupport": False,
+              "id": sop1_meta["museUID"],
+              "type": "muse_sampler_sound_pack",
+              "vendor": "MuseSounds"
+            },
+            "unitConfiguration": {}
+          },
+          "instrumentId": sop1_meta["instrumentId"],
+          "out": {
+            "auxSends": [
+              {"active": True, "signalAmount": 0.4},
+              {"active": True, "signalAmount": 0.3}
+            ],
+            "balance": -0.42,
+            "fxChain": {},
+            "volumeDb": 2.0
+          },
+          "partId": "1"
+        },
+        # Soprano 2 (Part 2, right)
+        {
+          "in": {
+            "resourceMeta": {
+              "attributes": {
+                "museCategory": "Muse Brass",
+                "museName": sop2_meta["museName"],
+                "musePack": "Muse Brass",
+                "museUID": sop2_meta["museUID"],
+                "museVendorName": "Muse",
+                "playbackSetupData": sop2_meta["playbackSetupData"]
+              },
+              "hasNativeEditorSupport": False,
+              "id": sop2_meta["museUID"],
+              "type": "muse_sampler_sound_pack",
+              "vendor": "MuseSounds"
+            },
+            "unitConfiguration": {}
+          },
+          "instrumentId": sop2_meta["instrumentId"],
+          "out": {
+            "auxSends": [
+              {"active": True, "signalAmount": 0.4},
+              {"active": True, "signalAmount": 0.3}
+            ],
+            "balance": 0.43,
+            "fxChain": {},
+            "volumeDb": 2.0
+          },
+          "partId": "2"
+        },
+        # Tenor 1 (Part 5, left)
+        {
+          "in": {
+            "resourceMeta": {
+              "attributes": {
+                "museCategory": "Muse Brass",
+                "museName": "Trombones a3",
+                "musePack": "Muse Brass",
+                "museUID": "111",
+                "museVendorName": "Muse",
+                "playbackSetupData": "winds.trombone.section"
+              },
+              "hasNativeEditorSupport": False,
+              "id": "111",
+              "type": "muse_sampler_sound_pack",
+              "vendor": "MuseSounds"
+            },
+            "unitConfiguration": {}
+          },
+          "instrumentId": "trombone",
+          "out": {
+            "auxSends": [
+              {"active": True, "signalAmount": 0.4},
+              {"active": True, "signalAmount": 0.3}
+            ],
+            "balance": -0.42,
+            "fxChain": {},
+            "volumeDb": -2.5
+          },
+          "partId": "5"
+        },
+        # Tenor 2 (Part 6, right)
+        {
+          "in": {
+            "resourceMeta": {
+              "attributes": {
+                "museCategory": "Muse Brass",
+                "museName": "Trombones a3",
+                "musePack": "Muse Brass",
+                "museUID": "111",
+                "museVendorName": "Muse",
+                "playbackSetupData": "winds.trombone.section"
+              },
+              "hasNativeEditorSupport": False,
+              "id": "111",
+              "type": "muse_sampler_sound_pack",
+              "vendor": "MuseSounds"
+            },
+            "unitConfiguration": {}
+          },
+          "instrumentId": "trombone",
+          "out": {
+            "auxSends": [
+              {"active": True, "signalAmount": 0.4},
+              {"active": True, "signalAmount": 0.3}
+            ],
+            "balance": 0.43,
+            "fxChain": {},
+            "volumeDb": -2.5
+          },
+          "partId": "6"
+        },
+        # Tenor 3 (Part 7, center reinforcement)
+        {
+          "in": {
+            "resourceMeta": {
+              "attributes": {
+                "museCategory": "Muse Brass",
+                "museName": "Trombones a3",
+                "musePack": "Muse Brass",
+                "museUID": "111",
+                "museVendorName": "Muse",
+                "playbackSetupData": "winds.trombone.section"
+              },
+              "hasNativeEditorSupport": False,
+              "id": "111",
+              "type": "muse_sampler_sound_pack",
+              "vendor": "MuseSounds"
+            },
+            "unitConfiguration": {}
+          },
+          "instrumentId": "trombone",
+          "out": {
+            "auxSends": [
+              {"active": True, "signalAmount": 0.4},
+              {"active": True, "signalAmount": 0.3}
+            ],
+            "balance": 0.0,
+            "fxChain": {},
+            "volumeDb": -1.5
+          },
+          "partId": "7"
+        }
+    ]
+    
+    with zipfile.ZipFile(mscz_path, 'r') as yin:
+        with zipfile.ZipFile(temp_path, 'w') as yout:
+            for item in yin.infolist():
+                data = yin.read(item.filename)
+                if item.filename == "audiosettings.json":
+                    try:
+                        settings = json.loads(data.decode('utf-8'))
+                    except Exception:
+                        settings = {}
+                    settings["tracks"] = injected_tracks
+                    settings["activeSoundProfile"] = "MuseSounds"
+                    data = json.dumps(settings, indent=2).encode('utf-8')
+                yout.writestr(item, data)
+                
+    os.replace(temp_path, mscz_path)
+
 
 def render_score(midi_path, output_mp3, soundfonts_dir):
     my_env = os.environ.copy()
@@ -577,22 +805,24 @@ def main():
             continue
             
         print(f"[{idx}/{total}] ▶ {name}...", end="", flush=True)
-        temp_midi = os.path.join(args.output, "temp_render_math.mid")
+        out_mid = os.path.join(args.output, f"{name}.mid")
+        out_mscz = os.path.join(args.output, f"{name}.mscz")
         
         try:
-            # 1. Processa e humaniza com as fórmulas de coral matemáticas
+            # 1. Processa e humaniza com as fórmulas de coral matemáticas (salva o .mid final)
             create_expression = not args.no_expression
-            process_midi_to_8part_math(path, temp_midi, preset["map"], use_expression=create_expression, speed=args.speed)
+            process_midi_to_8part_math(path, out_mid, preset["map"], use_expression=create_expression, speed=args.speed)
             
-            # 2. Renderiza no MuseScore 4
-            render_score(temp_midi, out_mp3, args.soundfonts)
+            # 2. Renderiza a partitura MSCZ no MuseScore 4
+            render_score(out_mid, out_mscz, args.soundfonts)
             
-            if os.path.exists(temp_midi):
-                os.remove(temp_midi)
+            # 3. Aplica o boost do Tenor diretamente no Mixer (audiosettings.json) do MSCZ
+            apply_mixer_boost(out_mscz, preset["map"])
+            
+            # 4. Renderiza o MP3 final a partir do MSCZ modificado
+            render_score(out_mscz, out_mp3, args.soundfonts)
             print(" ✓ concluído")
         except Exception as e:
-            if os.path.exists(temp_midi):
-                os.remove(temp_midi)
             print(f" ✗ FALHOU (erro: {e})")
  
     print("\n✓ Processamento de lote finalizado!")

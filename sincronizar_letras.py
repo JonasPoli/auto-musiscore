@@ -85,8 +85,10 @@ def carregar_letra_hino(hino_id, txt_path: Path = None) -> dict:
 
     verses = []
     chorus = None
+    final = None
     estrofe_atual = []
     is_coro_atual = False
+    is_final_atual = False
 
     for i in range(1, len(linhas)):
         linha = linhas[i].strip()
@@ -94,16 +96,27 @@ def carregar_letra_hino(hino_id, txt_path: Path = None) -> dict:
             if estrofe_atual:
                 if is_coro_atual:
                     chorus = estrofe_atual
+                elif is_final_atual:
+                    final = estrofe_atual
                 else:
                     verses.append(estrofe_atual)
                 estrofe_atual = []
                 is_coro_atual = False
+                is_final_atual = False
             continue
 
         coro_match = re.match(r"^coro\b:?\s*(.*)$", linha, flags=re.IGNORECASE)
         if coro_match:
             is_coro_atual = True
             resto = coro_match.group(1).strip()
+            if resto:
+                estrofe_atual.append(resto)
+            continue
+
+        final_match = re.match(r"^final\b:?\s*(.*)$", linha, flags=re.IGNORECASE)
+        if final_match:
+            is_final_atual = True
+            resto = final_match.group(1).strip()
             if resto:
                 estrofe_atual.append(resto)
             continue
@@ -115,13 +128,16 @@ def carregar_letra_hino(hino_id, txt_path: Path = None) -> dict:
     if estrofe_atual:
         if is_coro_atual:
             chorus = estrofe_atual
+        elif is_final_atual:
+            final = estrofe_atual
         else:
             verses.append(estrofe_atual)
 
     return {
         'titulo': titulo,
         'verses': verses,
-        'chorus': chorus
+        'chorus': chorus,
+        'final': final
     }
 
 # ==============================================================================
@@ -294,6 +310,7 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
     singing_notes = notes[intro_notes_count:]
     verses = letra['verses']
     chorus = letra['chorus']
+    final = letra.get('final')
     
     total_blocks = len(verses)
     notes_per_block = len(singing_notes) // total_blocks
@@ -305,10 +322,20 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
         block_notes = singing_notes[current_note_idx : current_note_idx + notes_per_block]
         current_note_idx += notes_per_block
 
-        if chorus:
-            # Dividir o bloco em Verso e Coro
+        has_second_part = False
+        if block_idx == total_blocks - 1 and final:
+            has_second_part = True
+            second_part_lines = final
+            second_part_type = "final"
+        elif chorus:
+            has_second_part = True
+            second_part_lines = chorus
+            second_part_type = "coro"
+
+        if has_second_part:
+            # Dividir o bloco em Verso e Coro/Final
             char_count_v = sum(len(l) for l in verses[block_idx])
-            char_count_c = sum(len(l) for l in chorus)
+            char_count_c = sum(len(l) for l in second_part_lines)
             f = char_count_v / (char_count_v + char_count_c)
             expected_n_v = int(len(block_notes) * f)
 
@@ -334,14 +361,14 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
                 item["num_verso"] = block_idx + 1
                 aligned_lines.append(item)
 
-            # Adicionar tempos do Coro
-            c_timings = process_lines_timing(c_notes, chorus, alpha)
+            # Adicionar tempos do Coro/Final
+            c_timings = process_lines_timing(c_notes, second_part_lines, alpha)
             for item in c_timings:
-                item["tipo"] = "coro"
+                item["tipo"] = second_part_type
                 item["num_verso"] = block_idx + 1
                 aligned_lines.append(item)
         else:
-            # Sem coro
+            # Sem coro/final
             v_timings = process_lines_timing(block_notes, verses[block_idx], alpha)
             for item in v_timings:
                 item["tipo"] = "verso"
@@ -431,7 +458,7 @@ def main():
     try:
         letra = carregar_letra_hino(hino_id, txt_path)
         print(f"   [letra] Título: {letra['titulo']}")
-        print(f"   [letra] Estrofes: {len(letra['verses'])} versos, Coro: {'Sim' if letra['chorus'] else 'Não'}")
+        print(f"   [letra] Estrofes: {len(letra['verses'])} versos, Coro: {'Sim' if letra['chorus'] else 'Não'}, Final: {'Sim' if letra['final'] else 'Não'}")
     except Exception as e:
         print(f"[erro] Falha ao ler letra do hino: {e}")
         sys.exit(1)
