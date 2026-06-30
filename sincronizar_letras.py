@@ -241,8 +241,8 @@ def estimar_speed_scale(midi_onsets, mp3_path):
         return 1.0
 
     # Grid search para alpha (fator multiplicador de tempo)
-    # Procuramos de 0.70 (30% mais rápido) a 1.45 (45% mais lento) com passo fino
-    alphas = np.arange(0.70, 1.45, 0.0005)
+    # Procuramos de 0.70 (30% mais rápido) a 2.50 (150% mais lento) com passo fino para suportar hinos lentificados
+    alphas = np.arange(0.70, 2.50, 0.0005)
     best_alpha = 1.0
     best_score = -1.0
 
