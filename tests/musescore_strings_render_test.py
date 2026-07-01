@@ -12,9 +12,8 @@ Uso:
 """
 
 import os
-import sys
 # Resolve o diretório raiz do projeto para permitir importações corretas
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'orchestrators')))
 import argparse
 import glob
 from pathlib import Path
@@ -27,7 +26,7 @@ try:
         STRINGS_PRESETS
     )
 except ImportError as e:
-    print(f"ERRO: Certifique-se de que 'musescore_strings_math.py' está no mesmo diretório. (Erro: {e})")
+    print(f"ERRO: Certifique-se de que 'musescore_strings_math.py' está na pasta 'orchestrators'. (Erro: {e})")
     sys.exit(1)
 
 def main():
@@ -36,7 +35,7 @@ def main():
                         help="Caminho do MIDI para teste. Se não especificado, pegará o primeiro de 'mid/'")
     parser.add_argument("--presets", default="all", 
                         help="IDs dos presets para testar, separados por vírgula (ex: '1,2,3') ou 'all' para todos os 20")
-    parser.add_argument("--output", default="output_strings_test", 
+    parser.add_argument("--output", default="output/strings_test", 
                         help="Pasta de saída para os arquivos de áudio de teste")
     parser.add_argument("--soundfonts", default="/Users/jonaspoli/Documents/MuseScore4/SoundFonts/Muse Hub Instruments", 
                         help="Caminho para os instrumentos das Muse Sounds")

@@ -1,4 +1,4 @@
-﻿tipo,numero,titulo,arquivo
+tipo,numero,titulo,arquivo
 hino,1,"Cristo, Meu Mestre",hino-001-cristo-meu-mestre.txt
 hino,2,De Deus Tu És Eleita,hino-002-de-deus-tu-es-eleita.txt
 hino,3,Faz-Nos Ouvir Tua Voz,hino-003-faz-nos-ouvir-tua-voz.txt
@@ -145,6 +145,7 @@ hino,143,"Porfiemos, Irmãos, Por Entrar Nos Céus",hino-143-porfiemos-irmaos-po
 hino,144,A Vida Eterna,hino-144-a-vida-eterna.txt
 hino,145,Pródigo Filho Vai,hino-145-prodigo-filho-vai.txt
 hino,146,De Deus veio a Luz,hino-146-de-deus-veio-a-luz.txt
+hino,147,É bom louvar ao Criador,hino-147-e-bom-louvar-ao-criador.txt
 hino,148,"Louvor a Deus, o Criador",hino-148-louvor-a-deus-o-criador.txt
 hino,149,"Ó Irmãos, Por Fé, Louvemos a Jesus",hino-149-o-irmaos-por-fe-louvemos-a-jesus.txt
 hino,150,"Jesus Cristo, Meu Senhor",hino-150-jesus-cristo-meu-senhor.txt

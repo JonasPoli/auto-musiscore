@@ -4,7 +4,7 @@ import mido
 import sys
 
 # Resolve o diretório raiz do projeto para permitir importações corretas
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'orchestrators')))
 
 # Importar o mapeamento do Preset 5
 try:
