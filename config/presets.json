@@ -1,0 +1,282 @@
+{
+  "1": {
+    "name": "Sinfônica Real",
+    "desc": "Equilíbrio e Contraste - Trumpet/Flugelhorn, French Horn, Trombone/Euphonium, Bass Trombone/Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Bass Trombone", "program": 57},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "2": {
+    "name": "Mellow Brass",
+    "desc": "Suave e Aveludada - Flugelhorn/Cornet, French Horn, Euphonium/Trombone, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Flugelhorn",  "program": 56},
+      "Soprano_2":   {"name": "Cornet",      "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Euphonium",   "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "3": {
+    "name": "Fanfarra Imperial",
+    "desc": "Brilhante e Majestosa - Trumpet duplos, French Horn, Trombone, Bass Trombone/Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Trumpet",     "program": 56},
+      "Contralto_1": {"name": "Trumpet",     "program": 56},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Bass Trombone", "program": 57},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "4": {
+    "name": "Orquestra de Trompas e Trombones",
+    "desc": "Som Denso e Macio - French Horn, Alto Horn, Trombone, Bass Trombone/Tuba",
+    "map": {
+      "Soprano_1":   {"name": "French Horn", "program": 60},
+      "Soprano_2":   {"name": "French Horn", "program": 60},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Alto Horn",   "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Bass Trombone", "program": 57},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "5": {
+    "name": "Catedral Antiga",
+    "desc": "Metais Renascentistas (Sackbuts) - Cornet/Flugelhorn, French Horn, Trombone, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Cornet",      "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Alto Horn",   "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "6": {
+    "name": "Double Quartet Clássico",
+    "desc": "Espelho Esquerda/Direita Perfeito - Trumpet, French Horn, Trombone, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Trumpet",     "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "7": {
+    "name": "Metais Graves Modernos (Heavy Low Brass)",
+    "desc": "Escuro e pesadíssimo - French Horn/Flugelhorn, Trombone/Euphonium, Tuba/VSL Bass Trombones",
+    "map": {
+      "Soprano_1":   {"name": "French Horn", "program": 60},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Trombone",    "program": 57},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "VSL Bass Trombones", "program": 57}
+    }
+  },
+  "8": {
+    "name": "Quinteto Ampliado",
+    "desc": "Brilhante e Espaçoso - Trumpet/Flugelhorn, Cornet/Horn, Trombone/Baritone, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "Cornet",      "program": 56},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Baritone Horn", "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "9": {
+    "name": "Metais Curtos e Percussivos",
+    "desc": "Foco em articulação staccato e seca - Cornet, Alto Horn, Baritone, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Cornet",      "program": 56},
+      "Soprano_2":   {"name": "Cornet",      "program": 56},
+      "Contralto_1": {"name": "Alto Horn",   "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Baritone Horn", "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "10": {
+    "name": "Romântica Alemã",
+    "desc": "Ar encorpado com foco em Trompas e Eufônios - Flugelhorn, French Horn, Euphonium, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Flugelhorn",  "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Euphonium",   "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "11": {
+    "name": "Som Brilhante de Arena",
+    "desc": "Grande destaque de agudos - Trumpet Lead, Flugelhorn/Horn, Trombone, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Trumpet",     "program": 56},
+      "Contralto_1": {"name": "Flugelhorn",  "program": 56},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "12": {
+    "name": "Orquestra Escura",
+    "desc": "Muito aveludado e som sombrio - Flugelhorn/Horn, Alto Horn, Trombone, Tuba/VSL Trombones",
+    "map": {
+      "Soprano_1":   {"name": "Flugelhorn",  "program": 56},
+      "Soprano_2":   {"name": "French Horn", "program": 60},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Alto Horn",   "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "VSL Bass Trombones", "program": 57}
+    }
+  },
+  "13": {
+    "name": "Seção de Coros Alternados",
+    "desc": "Som responsivo - Trumpet/Cornet, Horn/Alto, Euphonium/Trombone, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Cornet",      "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Alto Horn",   "program": 60},
+      "Tenor_1":     {"name": "Euphonium",   "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "14": {
+    "name": "Quarteto Dobrado de Eufônios",
+    "desc": "Som extremamente lírico e doce - Flugelhorn, French Horn, Euphonium, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Flugelhorn",  "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Euphonium",   "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "15": {
+    "name": "Grande Fanfarra (Metais de Aço)",
+    "desc": "Ataques potentes - Trumpet, Trombone, VSL Trombones, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Trumpet",     "program": 56},
+      "Contralto_1": {"name": "Trumpet",     "program": 56},
+      "Contralto_2": {"name": "Trombone",    "program": 57},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "VSL Bass Trombones", "program": 57},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "16": {
+    "name": "Orquestra Pastoral",
+    "desc": "Textura de sopros suaves - Flugelhorn/Cornet, French Horn, Baritone/Euphonium, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Flugelhorn",  "program": 56},
+      "Soprano_2":   {"name": "Cornet",      "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Baritone Horn", "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "17": {
+    "name": "Metais de Transição",
+    "desc": "Rico em diversidade de timbres - Cornet/Flugelhorn, French Horn/Trombone, Euphonium, Tuba/Bass Trombone",
+    "map": {
+      "Soprano_1":   {"name": "Cornet",      "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Trombone",    "program": 57},
+      "Tenor_1":     {"name": "Euphonium",   "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Bass Trombone", "program": 57}
+    }
+  },
+  "18": {
+    "name": "Som Híbrido VSL & Muse Brass",
+    "desc": "Trombones VSL na base e metais Muse Brass no topo - Trumpet/Flugelhorn, Horn, Trombone, VSL Trombones/Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "VSL Bass Trombones", "program": 57},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "19": {
+    "name": "Orquestra de Metais no Teatro",
+    "desc": "Foco em espacialidade natural e reverb largo - Trumpet/Flugelhorn, Horn/Alto, Trombone, Tuba",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "Alto Horn",   "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Trombone",    "program": 57},
+      "Baixo_1":     {"name": "Tuba",        "program": 58},
+      "Baixo_2":     {"name": "Tuba",        "program": 58}
+    }
+  },
+  "20": {
+    "name": "Som Denso Sinfônico",
+    "desc": "O som mais pesado com todos os instrumentos - Trumpet/Flugelhorn, French Horn, Trombone/Euphonium, Bass Trombone/VSL",
+    "map": {
+      "Soprano_1":   {"name": "Trumpet",     "program": 56},
+      "Soprano_2":   {"name": "Flugelhorn",  "program": 56},
+      "Contralto_1": {"name": "French Horn", "program": 60},
+      "Contralto_2": {"name": "French Horn", "program": 60},
+      "Tenor_1":     {"name": "Trombone",    "program": 57},
+      "Tenor_2":     {"name": "Euphonium",   "program": 57},
+      "Baixo_1":     {"name": "Bass Trombone", "program": 57},
+      "Baixo_2":     {"name": "VSL Bass Trombones", "program": 57}
+    }
+  }
+}
