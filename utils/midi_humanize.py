@@ -399,8 +399,11 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
         'voice.alto':         {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
         'voice.tenor':        {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
         'voice.bass':         {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'strings.contrabass':         {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'strings.contrabass.orchestral': {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+        'soprano':            {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+        'alto':               {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+        'tenor':              {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+        'bass':               {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+        'strings.contrabass.orchestral': {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
         'keyboard.piano':     {'uid': '201', 'instr_id': 'grand-piano', 'name': 'Grand Piano',          'setup': 'keys.piano',                         'cat': 'Muse Keys',    'pack': 'Muse Keys'},
     }
 
