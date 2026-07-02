@@ -8,8 +8,8 @@ Este arquivo define regras de comportamento e padrões de desenvolvimento para a
 
 Qualquer script orquestrador ou gerador de som novo deve implementar e documentar estritamente os seguintes processos de humanização:
 
-1.  **Desincronismo Micro-Temporal (Timing Offset)**:
-    *   Músicos reais não atacam notas no mesmo instante exato. Cada pauta/voz de um instrumento deve possuir um atraso aleatório independente de **5 ms a 25 ms** para evitar o cancelamento de fase digital (flanger/chorus) e dar densidade acústica.
+1.  **Desincronismo Micro-Temporal (Timing Offset - REMOVIDO)**:
+    *   Para evitar que as notas fiquem emboladas/atrasadas (especialmente em hinos mais lentos), o desincronismo micro-temporal foi desativado (atrasos definidos como zero). As notas devem iniciar exatamente no tempo correto da partitura.
 2.  **Atenuação de Ataque Pós-Pausa (Velocity & CC11 Ramp)**:
     *   A primeira nota tocada por uma voz após um silêncio (pausa >= 0.25 tempos) deve ter a velocidade inicial limitada a **Velocity = 10**.
     *   Deve ser programado um crescendo dinâmico via controlador MIDI **CC11 (Expression)** subindo de 40 a 100 ao longo de 200 ms a 250 ms.

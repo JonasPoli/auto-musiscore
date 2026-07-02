@@ -169,6 +169,16 @@ def generate_organ_midi(input_path, output_path, program, speed=1.0):
     new_mid = mido.MidiFile()
     new_mid.ticks_per_beat = mid.ticks_per_beat
     
+    # Obter o tempo do MIDI original
+    tempo = 500000
+    for track in mid.tracks:
+        for msg in track:
+            if msg.type == 'set_tempo':
+                tempo = msg.tempo
+                break
+    if speed != 1.0:
+        tempo = int(tempo / speed)
+        
     # Meta track
     meta_track = mido.MidiTrack()
     new_mid.tracks.append(meta_track)
@@ -245,10 +255,11 @@ def generate_organ_midi(input_path, output_path, program, speed=1.0):
         
         # Humanização
         processed_events = []
+        # Micro-delay por pauta/voz (removido/desativado por feedback de embolamento)
+        delay_sec = 0.0
+        delay_ticks = 0
+        
         for i, n in enumerate(notes):
-            # Micro-delay
-            delay_sec = random.uniform(0.005, 0.020)
-            delay_ticks = int((delay_sec * 1000000.0 * mid.ticks_per_beat) / 500000)
             on_new = n["on_time"] + delay_ticks
             
             is_after_pause = (i == 0) or (n["on_time"] - notes[i-1]["off_time"] >= mid.ticks_per_beat * 0.25)
@@ -261,6 +272,15 @@ def generate_organ_midi(input_path, output_path, program, speed=1.0):
                 dur = int(dur * 0.70)
                 
             off_new = on_new + max(15, dur)
+            
+            # Evita overlaps entre notas subsequentes que iniciam após a atual
+            next_start = None
+            for nj in notes[i+1:]:
+                if nj["on_time"] > n["on_time"]:
+                    next_start = nj["on_time"] + delay_ticks
+                    break
+            if next_start is not None and off_new > next_start:
+                off_new = max(on_new + 5, next_start)
             
             v_note = n["velocity"]
             if is_after_pause:

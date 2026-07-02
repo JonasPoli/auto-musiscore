@@ -30,7 +30,7 @@ def extrair_prefixo_e_id(path: Path) -> (str, int):
     prefix = 'coro' if 'coro' in path.name.lower() else 'hino'
     return prefix, hino_id
 
-def processar_lote(start_id: int = None, end_id: int = None, speed_factor: float = 1.0):
+def processar_lote(start_id: int = None, end_id: int = None, speed_factor: float = 1.0, overwrite: bool = False):
     midi_dir = ROOT / 'mid'
     output_dir = ROOT / 'output' / 'orquestra'
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -63,6 +63,7 @@ def processar_lote(start_id: int = None, end_id: int = None, speed_factor: float
     print(f"============================================================")
 
     sucessos = 0
+    pulados = 0
     falhas = []
     tempo_inicio = time.time()
 
@@ -70,6 +71,11 @@ def processar_lote(start_id: int = None, end_id: int = None, speed_factor: float
         hino_str = f"{prefix}_{hino_id:03d}"
         output_mp3 = output_dir / f"{hino_str}.mp3"
         
+        if not overwrite and output_mp3.exists():
+            print(f"\n[{idx}/{total}] Pulando {midi_path.name} (já existe {output_mp3.name})")
+            pulados += 1
+            continue
+            
         print(f"\n[{idx}/{total}] Processando {midi_path.name}...")
         print(f"  ➔ Alvo: {output_mp3.name}")
         
@@ -103,6 +109,8 @@ def processar_lote(start_id: int = None, end_id: int = None, speed_factor: float
     print(f" FIM DO PROCESSAMENTO")
     print(f" Tempo total: {tempo_total/60:.1f} minutos")
     print(f" Sucessos: {sucessos}/{total}")
+    if pulados > 0:
+        print(f" Pulados (já existentes): {pulados}/{total}")
     if falhas:
         print(f" Falhas ({len(falhas)}):")
         for f in falhas:
@@ -114,6 +122,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=None, help="ID inicial do hino (ex: 1)")
     parser.add_argument("--end",   type=int, default=None, help="ID final do hino (ex: 5)")
     parser.add_argument("--speed-factor", type=float, default=1.0, help="Fator de velocidade (ex: 1.0 = padrão, 0.85 = -15%, 1.15 = +15%)")
+    parser.add_argument("--overwrite", action="store_true", help="Força a regeração dos hinos mesmo se o MP3 final já existir")
     args = parser.parse_args()
 
-    processar_lote(args.start, args.end, args.speed_factor)
+    processar_lote(args.start, args.end, args.speed_factor, overwrite=args.overwrite)

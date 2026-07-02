@@ -61,6 +61,8 @@ def process_midi_to_custom(input_path, output_midi_path, model, speed=1.0):
             if msg.type == 'set_tempo':
                 tempo = msg.tempo
                 break
+    if speed != 1.0:
+        tempo = int(tempo / speed)
 
     # 3. Detectar limites do último verso
     max_on_time = 0
@@ -180,6 +182,9 @@ def process_midi_to_custom(input_path, output_midi_path, model, speed=1.0):
                         })
         notes_by_voice[v].sort(key=lambda x: x["on_time"])
 
+    # Dicionário de atrasos por voz (desativado/removido para evitar embolamento)
+    voice_delays = {v: 0.0 for v in ["Soprano", "Contralto", "Tenor", "Baixo"]}
+    
     # 6. Preencher as novas trilhas
     for ch_idx, conf in enumerate(channels_config):
         track_name = conf["name"]
@@ -234,16 +239,16 @@ def process_midi_to_custom(input_path, output_midi_path, model, speed=1.0):
                 
             valid_notes.append(note.copy())
             
+        # Atraso aleatório (desincronismo humano de 5 a 15 ms por voz, conforme AGENTS.md)
+        delay_sec = voice_delays.get(voice_name, 0.005)
+        delay_ticks = seconds_to_ticks(delay_sec, tempo, ticks_per_beat)
+        
         # Aplicar humanizações individuais (micro-delays e note-shortening antes de pausas)
         notes_humanized = []
         for i, note in enumerate(valid_notes):
             on_time = note["on_time"]
             off_time = note["off_time"]
             duration_orig = off_time - on_time
-            
-            # Atraso aleatório (desincronismo humano de 5 a 25 ms por trilha)
-            delay_sec = random.uniform(0.005, 0.025)
-            delay_ticks = seconds_to_ticks(delay_sec, tempo, ticks_per_beat)
             
             on_time_new = on_time + delay_ticks
             
@@ -262,6 +267,15 @@ def process_midi_to_custom(input_path, output_midi_path, model, speed=1.0):
                 
             off_time_new = on_time_new + max(15, duration_new)
             
+            # Evita overlaps entre notas subsequentes que iniciam após a atual
+            next_start = None
+            for nj in valid_notes[i+1:]:
+                if nj["on_time"] > on_time:
+                    next_start = nj["on_time"] + delay_ticks
+                    break
+            if next_start is not None and off_time_new > next_start:
+                off_time_new = max(on_time_new + 5, next_start)
+            
             notes_humanized.append({
                 "note": note["note"] + conf["octave"],
                 "on_time_new": on_time_new,
@@ -269,13 +283,6 @@ def process_midi_to_custom(input_path, output_midi_path, model, speed=1.0):
                 "velocity_orig": note["velocity"],
                 "is_after_pause": is_after_pause
             })
-            
-        # Correção de sobreposição consecutiva
-        for i in range(len(notes_humanized) - 1):
-            curr = notes_humanized[i]
-            nxt = notes_humanized[i+1]
-            if curr["off_time_new"] > nxt["on_time_new"]:
-                curr["off_time_new"] = max(curr["on_time_new"] + 10, nxt["on_time_new"])
 
         # Escrever mensagens MIDI
         for note in notes_humanized:

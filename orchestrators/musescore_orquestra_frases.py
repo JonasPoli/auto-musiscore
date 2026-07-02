@@ -374,8 +374,11 @@ def build_orchestrated_midi(mid, phrases, orchestration_plan, speed=0.85):
     for phrase_idx, (phrase_start, phrase_end) in enumerate(phrases):
         preset = PRESETS[orchestration_plan[phrase_idx]]
 
-        # Delay único por frase (deslocamento da frase inteira)
-        phrase_delay = seconds_to_ticks(random.uniform(0.003, 0.015), tempo_new, tpb)
+        # Delay único por frase (desativado/removido para evitar embolamento)
+        phrase_delay = 0
+
+        # Dicionário de atrasos por voz (desativado/removido para evitar embolamento)
+        voice_delays = {v: 0.0 for v in ["Soprano", "Contralto", "Tenor", "Baixo"]}
 
         for inst in preset["instruments"]:
             voice   = inst["voice"]
@@ -386,8 +389,8 @@ def build_orchestrated_midi(mid, phrases, orchestration_plan, speed=0.85):
             midi_ch = MELODIC_CHANNELS[ch_counter % len(MELODIC_CHANNELS)]
             ch_counter += 1
 
-            # Micro-delay de 5–25 ms por instrumento (humanização de ataque)
-            inst_delay = seconds_to_ticks(random.uniform(0.005, 0.025), tempo_new, tpb)
+            # Micro-delay de 5–15 ms por voz (humanização de ataque)
+            inst_delay = seconds_to_ticks(voice_delays.get(voice, 0.005), tempo_new, tpb)
             total_delay = phrase_delay + inst_delay
 
             notes = [
@@ -417,6 +420,16 @@ def build_orchestrated_midi(mid, phrases, orchestration_plan, speed=0.85):
 
                 on_new  = on_t + total_delay
                 off_new = on_new + max(15, dur)
+                
+                # Evita overlaps entre notas subsequentes que iniciam após a atual
+                next_start = None
+                for nj in notes[i+1:]:
+                    if nj[1] > on_t:
+                        next_start = nj[1] + total_delay
+                        break
+                if next_start is not None and off_new > next_start:
+                    off_new = max(on_new + 5, next_start)
+                    
                 v_note  = 10 if is_after_pause else min(127, max(1, vel))
 
                 all_events.append(mido.Message('note_on',  channel=midi_ch, note=note,

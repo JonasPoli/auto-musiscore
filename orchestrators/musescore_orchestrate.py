@@ -397,6 +397,8 @@ def process_midi_to_8part(input_path, output_path, mapping, use_expression=True,
             if msg.type == 'set_tempo':
                 tempo = msg.tempo
                 break
+    if speed != 1.0:
+        tempo = int(tempo / speed)
 
     max_abs_time = 0
     for track in mid.tracks:
@@ -444,6 +446,9 @@ def process_midi_to_8part(input_path, output_path, mapping, use_expression=True,
         {"voice": "Baixo",     "pan": 48, "inst": mapping["Baixo_1"]},
         {"voice": "Baixo",     "pan": 80, "inst": mapping["Baixo_2"]}
     ]
+    
+    # Dicionário de atrasos por voz (desativado/removido para evitar embolamento)
+    voice_delays = {v: 0.0 for v in ["Soprano", "Contralto", "Tenor", "Baixo"]}
     
     for idx, conf in enumerate(instruments_config):
         voice_track = mido.MidiTrack()
@@ -507,18 +512,15 @@ def process_midi_to_8part(input_path, output_path, mapping, use_expression=True,
             active_notes = {}
             processed_abs_events = []
 
-            for note_info in raw_notes:
+            # Humanização de ataque independente para cada voz (desincronismo de 5 a 15 ms por naipe, conforme AGENTS.md)
+            delay_sec = voice_delays.get(voice_name, 0.005)
+            delay_ticks = seconds_to_ticks(delay_sec, tempo, mid.ticks_per_beat)
+
+            for idx_n, note_info in enumerate(raw_notes):
                 note_num = note_info["note"]
                 on_t     = note_info["on_time"]
                 off_t    = note_info["off_time"]
                 vel_orig = note_info["velocity"]
-
-                # Humanização de ataque independente para cada pauta
-                if voice_name == "Soprano":
-                    delay_sec = 0.0
-                else:
-                    delay_sec = random.choice([0.0, 0.015, 0.05, 0.10])
-                delay_ticks = seconds_to_ticks(delay_sec, tempo, mid.ticks_per_beat)
 
                 on_t_new = on_t + delay_ticks
 
@@ -526,6 +528,15 @@ def process_midi_to_8part(input_path, output_path, mapping, use_expression=True,
                 duration = off_t - on_t
                 duration = remove_staccato(duration, mid.ticks_per_beat)
                 off_t_new = on_t_new + duration
+                
+                # Evita overlaps entre notas subsequentes que iniciam após a atual
+                next_start = None
+                for nj in raw_notes[idx_n+1:]:
+                    if nj["on_time"] > on_t:
+                        next_start = nj["on_time"] + delay_ticks
+                        break
+                if next_start is not None and off_t_new > next_start:
+                    off_t_new = max(on_t_new + 5, next_start)
 
                 # Cria o note_on com velocity expressiva
                 note_on_msg  = mido.Message('note_on',  channel=midi_channel, note=note_num, velocity=vel_orig, time=on_t_new)

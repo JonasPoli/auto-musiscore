@@ -14,7 +14,7 @@ Pipeline correto (validado por Teste 2):
     3. Trim de silêncio (ffmpeg) para cada MP3
     4. Concatena com gaps do MIDI original
 """
-import sys, subprocess, shutil, argparse, random
+import sys, os, subprocess, shutil, argparse, random
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -154,12 +154,15 @@ def render_phrase(mid, ph_start, ph_end, combo, speed, bpm_target, work_dir, phr
     set_pan_in_mscz(mscz_tmp, ch_pan_map)
     n_pan = build_and_inject_audiosettings_pan(mscz_tmp, ch_pan_map)
     ajustar_ultimo_compasso_mscz(mscz_tmp)
-    midi_tmp.unlink(missing_ok=True)
-    
-    # Se partes_dir existir, copia o .mscz gerado (orquestrado/humanizado) para análise
-    if partes_dir and mscz_tmp.exists():
+    # Se partes_dir existir, copia o MIDI e MSCZ gerados (orquestrado/humanizado) para análise
+    if partes_dir:
         partes_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy(mscz_tmp, partes_dir / f'F{phrase_idx:02d}.mscz')
+        if midi_tmp.exists():
+            shutil.copy(midi_tmp, partes_dir / f'F{phrase_idx:02d}.mid')
+        if mscz_tmp.exists():
+            shutil.copy(mscz_tmp, partes_dir / f'F{phrase_idx:02d}.mscz')
+
+    midi_tmp.unlink(missing_ok=True)
 
     # Pass 2: MSCZ → MP3 raw (IMEDIATAMENTE após Pass1, zero delay)
     r = subprocess.run([MSCORE_BIN, '-o', str(mp3_raw), str(mscz_tmp)],
@@ -344,7 +347,7 @@ def gerar_hino_completo(midi_path: str, output_mp3: str, bpm_target: float = 60.
     partes_dir.mkdir(parents=True, exist_ok=True)
     escrever_explicacao_md(partes_dir, selected, Path(midi_path).name)
 
-    work_dir = Path('/tmp/_tmp_hino')
+    work_dir = Path(f'/tmp/_tmp_hino_{os.getpid()}')
     shutil.rmtree(work_dir, ignore_errors=True)
     work_dir.mkdir(parents=True, exist_ok=True)
 
@@ -427,6 +430,20 @@ def gerar_hino_completo(midi_path: str, output_mp3: str, bpm_target: float = 60.
     shutil.rmtree(work_dir, ignore_errors=True)
 
     if out_path.exists():
+        # ── Fase 4.5: Pós-processamento de fade-in pós-pausa (conforme AGENTS.md) ─
+        pp_script = Path(__file__).parent / 'postprocess_fade_apos_pausa.py'
+        if pp_script.exists():
+            print("Aplicando pós-processamento de fade-in (Smoothstep 200 ms) ...")
+            subprocess.run([
+                sys.executable, str(pp_script),
+                '--input', str(out_path),
+                '--output', str(out_path),
+                '--fade-ms', '200',
+                '--lookback-ms', '20',
+                '--min-silence-ms', '250',
+                '--include-start'
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
         print(f'\nHino completo: {out_path}  ({out_path.stat().st_size//1024} KB)')
         
         # ── Fase 5: Sincronização automática de letras ───────────────────────────

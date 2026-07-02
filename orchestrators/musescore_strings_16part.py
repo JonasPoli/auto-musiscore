@@ -362,6 +362,9 @@ def process_midi_to_16part_math(input_path, output_path, mapping, use_expression
             elif msg.type == 'set_tempo':
                 tempo = msg.tempo
                 
+    if speed != 1.0:
+        tempo = int(tempo / speed)
+                
     # Configurações de fraseado e versos para o hino 002 ou detecção dinâmica
     filename_base = os.path.basename(input_path)
     if "002-" in filename_base and not "Coro" in filename_base:

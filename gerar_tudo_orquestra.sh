@@ -3,7 +3,7 @@
 # Script utilitário para gerar a orquestra completa (todos os hinos e coros)
 # Uso:
 #   ./gerar_tudo_orquestra.sh [--speed-factor 1.0]
-#   ./gerar_tudo_orquestra.sh --start 1 --end 5 --speed-factor 0.85
+#   ./gerar_tudo_orquestra.sh --start 1 --end 5 --speed-factor 0.85 [--overwrite]
 
 # Garante que estamos na pasta correta
 cd "$(dirname "$0")"

@@ -47,3 +47,6 @@ scratch/*
 
 biblioteca-de-sons/*
 biblioteca-timbres/*
+
+tests/ajuste-pelo-terminal/
+tests/ajuste-pelo-terminal/*

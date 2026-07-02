@@ -333,10 +333,15 @@ def build_combo_midi(mid, voice_notes, instruments, speed=0.44, phrase_start=0):
     ordered_pans = []
     ordered_vols = []
 
+    # Dicionário de atrasos por voz (desativado/removido para evitar embolamento)
+    voice_delays = {v: 0.0 for v in instruments.keys()}
+
     for voice, inst_list in instruments.items():
         notes = voice_notes.get(voice, [])
         if not notes:
             continue
+        delay_sec = voice_delays[voice]
+        delay_ticks = seconds_to_ticks(delay_sec, tempo_new, tpb)
         for local_idx, inst in enumerate(inst_list):
             midi_ch = MELODIC_CHANNELS[ch_counter % len(MELODIC_CHANNELS)]
             ch_counter += 1
@@ -347,9 +352,6 @@ def build_combo_midi(mid, voice_notes, instruments, speed=0.44, phrase_start=0):
             if mixed and inst["fam"] == "str":
                 vol = max(20, vol // 2)
             ordered_vols.append(vol)
-            # Atraso aleatório por instrumento ( timing offset ): 5 ms a 25 ms (conforme AGENTS.md)
-            # Evita cancelamento de fase e dá densidade realista sem poluir a partitura.
-            delay_ticks = seconds_to_ticks(random.uniform(0.005, 0.025), tempo_new, tpb)
 
             all_events += [
                 mido.Message('program_change', channel=midi_ch, program=inst["program"], time=0),
@@ -381,6 +383,16 @@ def build_combo_midi(mid, voice_notes, instruments, speed=0.44, phrase_start=0):
                     dur = int(dur * 0.70)
                 on_new  = (on_t - phrase_start) + delay_ticks
                 off_new = on_new + max(15, dur)
+                
+                # Evita overlaps entre notas subsequentes que iniciam após a atual
+                next_start = None
+                for nj in notes[i+1:]:
+                    if nj[1] > on_t:
+                        next_start = (nj[1] - phrase_start) + delay_ticks
+                        break
+                if next_start is not None and off_new > next_start:
+                    off_new = max(on_new + 5, next_start)
+                    
                 v_note  = attack_vel if is_after_pause else min(127, max(1, vel))
 
                 all_events.append(mido.Message('note_on',  channel=midi_ch, note=note,
