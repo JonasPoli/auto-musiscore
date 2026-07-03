@@ -304,6 +304,132 @@ def set_tempo_in_mscz(mscz_path, bpm: float) -> bool:
     return True
 
 
+_MUSE_LOOKUP = {
+    # Cordas (extraídos do arquivo ajustado do usuário)
+    'strings.violin': [
+        {'uid': '103', 'instr_id': 'violin',     'name': 'Violin 1 (Solo)',      'setup': 'strings.violin.orchestral:primary',   'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+        {'uid': '104', 'instr_id': 'violin',     'name': 'Violin 2 (Solo)',      'setup': 'strings.violin.orchestral:secondary', 'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    ],
+    'strings.viola':      {'uid': '105', 'instr_id': 'viola',       'name': 'Viola (Solo)',         'setup': 'strings.viola.orchestral',           'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'strings.cello':      {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'strings.contrabass': {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'strings.double-bass':{'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+
+    # Mapeamentos curtos (gerados pelo MuseScore ao importar arquivos MIDI)
+    'violin': [
+        {'uid': '103', 'instr_id': 'violin',     'name': 'Violin 1 (Solo)',      'setup': 'strings.violin.orchestral:primary',   'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+        {'uid': '104', 'instr_id': 'violin',     'name': 'Violin 2 (Solo)',      'setup': 'strings.violin.orchestral:secondary', 'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    ],
+    'violins': [
+        {'uid': '103', 'instr_id': 'violin',     'name': 'Violin 1 (Solo)',      'setup': 'strings.violin.orchestral:primary',   'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+        {'uid': '104', 'instr_id': 'violin',     'name': 'Violin 2 (Solo)',      'setup': 'strings.violin.orchestral:secondary', 'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    ],
+    'viola':              {'uid': '105', 'instr_id': 'viola',       'name': 'Viola (Solo)',         'setup': 'strings.viola.orchestral',           'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'violas':             {'uid': '105', 'instr_id': 'viola',       'name': 'Viola (Solo)',         'setup': 'strings.viola.orchestral',           'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'violoncello':        {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'violoncellos':       {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'cello':              {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'cellos':             {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'contrabass':         {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'contrabasses':       {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'double-bass':        {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'double-basses':      {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+
+    # Metais (dos arquivos da biblioteca brass_standard)
+    'brass.trumpet':      {'uid': '110', 'instr_id': 'bb-trumpet',  'name': 'Trumpet',             'setup': 'winds.trumpet',                      'cat': 'Muse Brass',   'pack': 'Muse Brass'},
+    'brass.trombone':     {'uid': '111', 'instr_id': 'trombone',    'name': 'Trombone',            'setup': 'winds.trombone',                     'cat': 'Muse Brass',   'pack': 'Muse Brass'},
+    'brass.french-horn':  {'uid': '112', 'instr_id': 'horn',             'name': 'Horn in F',           'setup': 'winds.horn',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.tuba':         {'uid': '113', 'instr_id': 'tuba',             'name': 'Tuba',                'setup': 'winds.tuba',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.flugelhorn':   {'uid': '114', 'instr_id': 'flugelhorn',       'name': 'Flugelhorn',          'setup': 'winds.flugelhorn',                   'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.cornet':       {'uid': '115', 'instr_id': 'cornet',           'name': 'Cornet',              'setup': 'winds.cornet',                       'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.tenor-horn':   {'uid': '116', 'instr_id': 'alto-horn',        'name': 'Alto Horn',           'setup': 'winds.alto_horn',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.baritone-horn':{'uid': '117', 'instr_id': 'baritone',         'name': 'Baritone Horn',       'setup': 'winds.baritone',                     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'brass.euphonium':    {'uid': '118', 'instr_id': 'euphonium',        'name': 'Euphonium',           'setup': 'winds.euphonium',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+
+    # Mapeamentos curtos de metais
+    'bb-trumpet':         {'uid': '110', 'instr_id': 'bb-trumpet',  'name': 'Trumpet',             'setup': 'winds.trumpet',                      'cat': 'Muse Brass',   'pack': 'Muse Brass'},
+    'horn':               {'uid': '112', 'instr_id': 'horn',        'name': 'Horn in F',           'setup': 'winds.horn',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'french-horn':        {'uid': '112', 'instr_id': 'horn',        'name': 'Horn in F',           'setup': 'winds.horn',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'trombone':           {'uid': '111', 'instr_id': 'trombone',    'name': 'Trombone',            'setup': 'winds.trombone',                     'cat': 'Muse Brass',   'pack': 'Muse Brass'},
+    'tuba':               {'uid': '113', 'instr_id': 'tuba',        'name': 'Tuba',                'setup': 'winds.tuba',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'flugelhorn':         {'uid': '114', 'instr_id': 'flugelhorn',  'name': 'Flugelhorn',          'setup': 'winds.flugelhorn',                   'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'cornet':             {'uid': '115', 'instr_id': 'cornet',      'name': 'Cornet',              'setup': 'winds.cornet',                       'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'alto-horn':          {'uid': '116', 'instr_id': 'alto-horn',   'name': 'Alto Horn',           'setup': 'winds.alto_horn',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'tenor-horn':         {'uid': '116', 'instr_id': 'alto-horn',   'name': 'Alto Horn',           'setup': 'winds.alto_horn',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'baritone':           {'uid': '117', 'instr_id': 'baritone',     'name': 'Baritone Horn',       'setup': 'winds.baritone',                     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'euphonium':          {'uid': '118', 'instr_id': 'euphonium',    'name': 'Euphonium',           'setup': 'winds.euphonium',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+
+    # Madeiras (Muse Woodwinds)
+    'woodwind.flutes.flute':      {'uid': '120', 'instr_id': 'flute',            'name': 'Flute',               'setup': 'winds.flute',                        'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'woodwind.flutes.piccolo':    {'uid': '125', 'instr_id': 'piccolo',          'name': 'Piccolo',             'setup': 'winds.piccolo',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'woodwind.reed.oboe':         {'uid': '121', 'instr_id': 'oboe',             'name': 'Oboe',                'setup': 'winds.oboe',                         'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.oboe':             {'uid': '121', 'instr_id': 'oboe',             'name': 'Oboe',                'setup': 'winds.oboe',                         'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    
+    # English Horn mapeado para French Horns a6 (seção) conforme alterado pelo usuário para corpo do som e evitar mudez
+    'woodwind.reed.english-horn': {'uid': '96',  'instr_id': 'english-horn',     'name': 'Horns a6',            'setup': 'winds.horn.french:in_a:section',     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'wind.reed.english-horn':     {'uid': '96',  'instr_id': 'english-horn',     'name': 'Horns a6',            'setup': 'winds.horn.french:in_a:section',     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    
+    # Clarinetes corrigidos (uid 127, setup específico winds.clarinet.soprano:in_b_flat)
+    'woodwind.reed.clarinet':     {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.clarinet':         {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.clarinet.bflat':   {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    
+    'woodwind.reed.bassoon':      {'uid': '123', 'instr_id': 'bassoon',          'name': 'Bassoon',             'setup': 'winds.bassoon',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.bassoon':          {'uid': '123', 'instr_id': 'bassoon',          'name': 'Bassoon',             'setup': 'winds.bassoon',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    
+    # Contrabassoon corrigido (uid 134 e não 126)
+    'woodwind.reed.contrabassoon':{'uid': '134', 'instr_id': 'contrabassoon',    'name': 'Contrabassoon',       'setup': 'winds.contrabassoon',                'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.contrabassoon':    {'uid': '134', 'instr_id': 'contrabassoon',    'name': 'Contrabassoon',       'setup': 'winds.contrabassoon',                'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+
+    # Mapeamentos curtos de madeiras
+    'flute':              {'uid': '120', 'instr_id': 'flute',       'name': 'Flute',               'setup': 'winds.flute',                        'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'piccolo':            {'uid': '125', 'instr_id': 'piccolo',     'name': 'Piccolo',             'setup': 'winds.piccolo',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'oboe':               {'uid': '121', 'instr_id': 'oboe',        'name': 'Oboe',                'setup': 'winds.oboe',                         'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'english-horn':       {'uid': '96',  'instr_id': 'english-horn','name': 'Horns a6',            'setup': 'winds.horn.french:in_a:section',     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
+    'bb-clarinet':        {'uid': '127', 'instr_id': 'bflat-clarinet','name': 'Clarinet in Bb',    'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'clarinet':           {'uid': '127', 'instr_id': 'bflat-clarinet','name': 'Clarinet in Bb',    'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'bassoon':            {'uid': '123', 'instr_id': 'bassoon',     'name': 'Bassoon',             'setup': 'winds.bassoon',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'contrabassoon':      {'uid': '134', 'instr_id': 'contrabassoon',  'name': 'Contrabassoon',    'setup': 'winds.contrabassoon',                'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+
+    # Saxofones corrigidos (Soprano=129/setup, Alto=130/setup, Tenor=131/setup, Baritone=132/setup)
+    'wind.reed.saxophone.soprano':{'uid': '129', 'instr_id': 'soprano-sax',      'name': 'Soprano Sax',         'setup': 'winds.saxophone.soprano',            'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.saxophone.alto':   {'uid': '130', 'instr_id': 'alto-sax',         'name': 'Alto Sax',            'setup': 'winds.saxophone.alto',               'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.saxophone.tenor':  {'uid': '131', 'instr_id': 'tenor-sax',        'name': 'Tenor Sax',           'setup': 'winds.saxophone.tenor',              'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.saxophone.baritone':{'uid': '132','instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.saxophone.bass':   {'uid': '132','instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    
+    'wind.reed.saxophone.contrabass':{'uid':'132','instr_id':'contrabass-saxophone', 'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'wind.reed.saxophone.subcontrabass':{'uid':'132','instr_id':'subcontrabass-saxophone', 'name': 'Baritone Sax',  'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    
+    'sax.soprano':                {'uid': '129', 'instr_id': 'soprano-sax',      'name': 'Soprano Sax',         'setup': 'winds.saxophone.soprano',            'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'sax.alto':                   {'uid': '130', 'instr_id': 'alto-sax',         'name': 'Alto Sax',            'setup': 'winds.saxophone.alto',               'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'sax.tenor':                  {'uid': '131', 'instr_id': 'tenor-sax',        'name': 'Tenor Sax',           'setup': 'winds.saxophone.tenor',              'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'sax.baritone':               {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'sax.bass':                   {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+
+    # Mapeamentos curtos de saxofones
+    'soprano-saxophone':          {'uid': '129', 'instr_id': 'soprano-sax',      'name': 'Soprano Sax',         'setup': 'winds.saxophone.soprano',            'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'alto-saxophone':             {'uid': '130', 'instr_id': 'alto-sax',         'name': 'Alto Sax',            'setup': 'winds.saxophone.alto',               'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'tenor-saxophone':            {'uid': '131', 'instr_id': 'tenor-sax',        'name': 'Tenor Sax',           'setup': 'winds.saxophone.tenor',              'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'baritone-saxophone':         {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'bass-saxophone':             {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'contrabass-saxophone':       {'uid': '132', 'instr_id': 'contrabass-saxophone', 'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+    'subcontrabass-saxophone':    {'uid': '132', 'instr_id': 'subcontrabass-saxophone', 'name': 'Baritone Sax',  'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
+
+    # Vozes (dos arquivos mid/)
+    'voice.soprano':      {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.mezzo-soprano':{'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.alto':         {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.tenor':        {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.bass':         {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'soprano':            {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'alto':               {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'tenor':              {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'bass':               {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'strings.contrabass.orchestral': {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
+    'keyboard.piano':     {'uid': '201', 'instr_id': 'grand-piano', 'name': 'Grand Piano',          'setup': 'keys.piano',                         'cat': 'Muse Keys',    'pack': 'Muse Keys'},
+}
+
 def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
     """
     Constrói o audiosettings.json completo (formato array MuseSounds) e injeta no MSCZ.
@@ -331,81 +457,6 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
 
     def cc10_to_balance(cc10: int) -> float:
         return -1.0 if cc10 < 64 else 1.0
-
-    # ── Lookup: instrumentId (MSCX) → MuseSounds metadata ─────────────────────
-    # Para multi-ocorrências (violin), fornece lista ordenada por ocorrência.
-    _MUSE_LOOKUP = {
-        # Cordas (extraídos do arquivo ajustado do usuário)
-        'strings.violin': [
-            {'uid': '103', 'instr_id': 'violin',     'name': 'Violin 1 (Solo)',      'setup': 'strings.violin.orchestral:primary',   'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-            {'uid': '104', 'instr_id': 'violin',     'name': 'Violin 2 (Solo)',      'setup': 'strings.violin.orchestral:secondary', 'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        ],
-        'strings.viola':      {'uid': '105', 'instr_id': 'viola',       'name': 'Viola (Solo)',         'setup': 'strings.viola.orchestral',           'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        'strings.cello':      {'uid': '106', 'instr_id': 'violoncello', 'name': 'Violoncello (Solo)',   'setup': 'strings.violoncello.orchestral',     'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        'strings.contrabass': {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        'strings.double-bass':{'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        # Metais (dos arquivos da biblioteca brass_standard)
-        'brass.trumpet':      {'uid': '110', 'instr_id': 'bb-trumpet',  'name': 'Trumpet',             'setup': 'winds.trumpet',                      'cat': 'Muse Brass',   'pack': 'Muse Brass'},
-        'brass.trombone':     {'uid': '111', 'instr_id': 'trombone',    'name': 'Trombone',            'setup': 'winds.trombone',                     'cat': 'Muse Brass',   'pack': 'Muse Brass'},
-        'brass.french-horn':  {'uid': '112', 'instr_id': 'horn',             'name': 'Horn in F',           'setup': 'winds.horn',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.tuba':         {'uid': '113', 'instr_id': 'tuba',             'name': 'Tuba',                'setup': 'winds.tuba',                         'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.flugelhorn':   {'uid': '114', 'instr_id': 'flugelhorn',       'name': 'Flugelhorn',          'setup': 'winds.flugelhorn',                   'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.cornet':       {'uid': '115', 'instr_id': 'cornet',           'name': 'Cornet',              'setup': 'winds.cornet',                       'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.tenor-horn':   {'uid': '116', 'instr_id': 'alto-horn',        'name': 'Alto Horn',           'setup': 'winds.alto_horn',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.baritone-horn':{'uid': '117', 'instr_id': 'baritone',         'name': 'Baritone Horn',       'setup': 'winds.baritone',                     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'brass.euphonium':    {'uid': '118', 'instr_id': 'euphonium',        'name': 'Euphonium',           'setup': 'winds.euphonium',                    'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-
-        # Madeiras (Muse Woodwinds)
-        'woodwind.flutes.flute':      {'uid': '120', 'instr_id': 'flute',            'name': 'Flute',               'setup': 'winds.flute',                        'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'woodwind.flutes.piccolo':    {'uid': '125', 'instr_id': 'piccolo',          'name': 'Piccolo',             'setup': 'winds.piccolo',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'woodwind.reed.oboe':         {'uid': '121', 'instr_id': 'oboe',             'name': 'Oboe',                'setup': 'winds.oboe',                         'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.oboe':             {'uid': '121', 'instr_id': 'oboe',             'name': 'Oboe',                'setup': 'winds.oboe',                         'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        
-        # English Horn mapeado para French Horns a6 (seção) conforme alterado pelo usuário para corpo do som e evitar mudez
-        'woodwind.reed.english-horn': {'uid': '96',  'instr_id': 'english-horn',     'name': 'Horns a6',            'setup': 'winds.horn.french:in_a:section',     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        'wind.reed.english-horn':     {'uid': '96',  'instr_id': 'english-horn',     'name': 'Horns a6',            'setup': 'winds.horn.french:in_a:section',     'cat': 'Muse Brass',     'pack': 'Muse Brass'},
-        
-        # Clarinetes corrigidos (uid 127, setup específico winds.clarinet.soprano:in_b_flat)
-        'woodwind.reed.clarinet':     {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.clarinet':         {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.clarinet.bflat':   {'uid': '127', 'instr_id': 'bflat-clarinet',   'name': 'Clarinet in Bb',      'setup': 'winds.clarinet.soprano:in_b_flat',   'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        
-        'woodwind.reed.bassoon':      {'uid': '123', 'instr_id': 'bassoon',          'name': 'Bassoon',             'setup': 'winds.bassoon',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.bassoon':          {'uid': '123', 'instr_id': 'bassoon',          'name': 'Bassoon',             'setup': 'winds.bassoon',                      'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        
-        # Contrabassoon corrigido (uid 134 e não 126)
-        'woodwind.reed.contrabassoon':{'uid': '134', 'instr_id': 'contrabassoon',    'name': 'Contrabassoon',       'setup': 'winds.contrabassoon',                'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.contrabassoon':    {'uid': '134', 'instr_id': 'contrabassoon',    'name': 'Contrabassoon',       'setup': 'winds.contrabassoon',                'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-
-        # Saxofones corrigidos (Soprano=129/setup, Alto=130/setup, Tenor=131/setup, Baritone=132/setup)
-        'wind.reed.saxophone.soprano':{'uid': '129', 'instr_id': 'soprano-sax',      'name': 'Soprano Sax',         'setup': 'winds.saxophone.soprano',            'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.saxophone.alto':   {'uid': '130', 'instr_id': 'alto-sax',         'name': 'Alto Sax',            'setup': 'winds.saxophone.alto',               'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.saxophone.tenor':  {'uid': '131', 'instr_id': 'tenor-sax',        'name': 'Tenor Sax',           'setup': 'winds.saxophone.tenor',              'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.saxophone.baritone':{'uid': '132','instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.saxophone.bass':   {'uid': '132','instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        
-        'wind.reed.saxophone.contrabass':{'uid':'132','instr_id':'contrabass-saxophone', 'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'wind.reed.saxophone.subcontrabass':{'uid':'132','instr_id':'subcontrabass-saxophone', 'name': 'Baritone Sax',  'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        
-        'sax.soprano':                {'uid': '129', 'instr_id': 'soprano-sax',      'name': 'Soprano Sax',         'setup': 'winds.saxophone.soprano',            'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'sax.alto':                   {'uid': '130', 'instr_id': 'alto-sax',         'name': 'Alto Sax',            'setup': 'winds.saxophone.alto',               'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'sax.tenor':                  {'uid': '131', 'instr_id': 'tenor-sax',        'name': 'Tenor Sax',           'setup': 'winds.saxophone.tenor',              'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'sax.baritone':               {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-        'sax.bass':                   {'uid': '132', 'instr_id': 'baritone-sax',     'name': 'Baritone Sax',        'setup': 'winds.saxophone.baritone',           'cat': 'Muse Woodwinds', 'pack': 'Muse Woodwinds'},
-
-        # Vozes (dos arquivos mid/)
-        'voice.soprano':      {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'voice.mezzo-soprano':{'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'voice.alto':         {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'voice.tenor':        {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'voice.bass':         {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'soprano':            {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'alto':               {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'tenor':              {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'bass':               {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
-        'strings.contrabass.orchestral': {'uid': '107', 'instr_id': 'contrabass',  'name': 'Contrabasses (Solo)',  'setup': 'strings.contrabass.orchestral',      'cat': 'Muse Strings', 'pack': 'Muse Strings'},
-        'keyboard.piano':     {'uid': '201', 'instr_id': 'grand-piano', 'name': 'Grand Piano',          'setup': 'keys.piano',                         'cat': 'Muse Keys',    'pack': 'Muse Keys'},
-    }
 
     # ── Lê MSCX ───────────────────────────────────────────────────────────────
     audio_settings = None

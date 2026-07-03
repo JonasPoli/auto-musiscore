@@ -199,3 +199,52 @@ for mp3 in *.mp3; do
 done
  
 ```
+
+---
+
+## 🎹 6. Orquestração e Geração por Nichos Instrumentais (Strings, Brass, Paletas, Sopros)
+
+O sistema permite a geração de versões instrumentais segmentadas por nichos específicos (**Cordas**, **Metais**, **Paletas** ou **Sopros**) de forma individual ou em lote.
+
+### A. Geração de Hino Individual por Nicho
+O script **[gerar_hino_nicho_completo.py](file:///Volumes/Dados/work/ia-music/utils/gerar_hino_nicho_completo.py)** processa um único hino para um nicho escolhido. Ele divide o hino em frases, orquestra progressivamente de 4 a 16 partes variando as combinações de instrumentos e aplica dinâmicas e pós-processamento acústico.
+
+**Comando:**
+```bash
+python3 utils/gerar_hino_nicho_completo.py --midi <caminho_midi> --out <caminho_saida_mp3> --group <nicho> [parâmetros_opcionais]
+```
+
+**Parâmetros:**
+*   **`--midi`** *(Obrigatório)*: Caminho para o arquivo MIDI original de entrada.
+*   **`--out`** *(Obrigatório)*: Caminho completo para salvar o arquivo de áudio de saída no formato `.mp3`.
+*   **`--group`** *(Obrigatório)*: Nicho instrumental desejado. Deve ser um de:
+    *   `strings`: Orquestra de Cordas
+    *   `brass`: Orquestra de Metais
+    *   `paletas`: Paletas (Saxofones e Clarinetes)
+    *   `sopros`: Sopros/Sopros de Madeira (Flauta, Oboé, etc.)
+*   **`--bpm`** *(Opcional)*: Andamento alvo em BPM. Se omitido, preserva o andamento original do MIDI (ou escalado por `--speed`).
+*   **`--speed`** *(Opcional)*: Fator multiplicador de velocidade (ex: `1.15` para acelerar em 15%).
+
+---
+
+### B. Geração em Lote de Todos os Nichos (Automatic Resume / Continuação)
+O script **[gerar_lote_nicho.py](file:///Volumes/Dados/work/ia-music/utils/gerar_lote_nicho.py)** gerencia a geração de múltiplos hinos em lote para os quatro nichos simultaneamente.
+
+**Comando:**
+```bash
+python3 utils/gerar_lote_nicho.py [parâmetros_opcionais]
+```
+
+**Parâmetros:**
+*   **`--start <ID>`** *(Opcional)*: ID numérico inicial do hino a partir do qual processar (ex: `--start 50`). Utilizado para pular hinos iniciais.
+*   **`--end <ID>`** *(Opcional)*: ID numérico limite final do hino a ser processado (ex: `--end 100`).
+*   **`--speed-factor <fator>`** *(Opcional)*: Fator de velocidade aplicado em lote (default é `1.0`).
+*   **`--overwrite`** *(Opcional / Flag)*: Força a regeração e substituição de arquivos MP3 que já existam na pasta de saída.
+
+#### 🔄 Comportamento de Continuação Automática (Resumo):
+Por padrão (sem a flag `--overwrite`), o script **pula automaticamente** os arquivos `.mp3` que já existem em `output/orquestra_nicho/`. 
+Portanto, se o processamento em lote travar ou for interrompido (ex: no hino 49), você pode simplesmente continuar a execução executando novamente o comando com `--start`:
+```bash
+python3 utils/gerar_lote_nicho.py --start 50
+```
+```

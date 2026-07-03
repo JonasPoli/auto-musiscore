@@ -63,8 +63,8 @@ COMBINATIONS_STRINGS = [
         "name": "Quarteto de Violoncelos (Cello Quartet)",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Cello (8ve)", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 85, "pan": 32, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Cello 2 (8ve)", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 80, "pan": 48, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Cello", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 85, "pan": 32, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Cello 2", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Cello 3", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 80, "pan": 80, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Cello 4", "instrument_id": "strings.cello", "system_name": "Violoncello (Solo)", "program": 42, "vol": 85, "pan": 96, "octave": 0}
         ]
@@ -278,8 +278,8 @@ COMBINATIONS_BRASS = [
         "name": "Quarteto de Trombones",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Trombone (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 32, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Trombone 2 (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 48, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Trombone", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 32, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Trombone 2", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Trombone 3", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 85, "pan": 80, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Trombone Baixo", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 85, "pan": 96, "octave": 0}
         ]
@@ -289,9 +289,9 @@ COMBINATIONS_BRASS = [
         "name": "Quarteto de Trompas (Horn Quartet)",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Trompa (8ve)", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 32, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Trompa 2", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 48, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Trompa 3", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 80, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Trompa", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 120, "pan": 32, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Trompa 2", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 120, "pan": 48, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Trompa 3", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 120, "pan": 80, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Trompa 4", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 85, "pan": 96, "octave": 0}
         ]
     },
@@ -314,7 +314,7 @@ COMBINATIONS_BRASS = [
             {"voice": "Soprano",   "instrument_name": "Trompete 1", "instrument_id": "brass.trumpet", "system_name": "Trumpet", "program": 56, "vol": 85, "pan": 24, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Trompete 2", "instrument_id": "brass.trumpet", "system_name": "Trumpet", "program": 56, "vol": 80, "pan": 40, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Flugelhorn", "instrument_id": "brass.flugelhorn", "system_name": "Flugelhorn", "program": 56, "vol": 85, "pan": 88, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Cornet", "instrument_id": "brass.cornet", "system_name": "Cornet", "program": 56, "vol": 85, "pan": 104, "octave": 0}
+            {"voice": "Baixo",     "instrument_name": "Cornet", "instrument_id": "brass.cornet", "system_name": "Cornet", "program": 56, "vol": 60, "pan": 104, "octave": 0}
         ]
     },
     # ─── 8 INSTRUMENTOS (OCTETOS) ────────────────────────────────────────────
@@ -338,10 +338,10 @@ COMBINATIONS_BRASS = [
         "name": "Octeto de Trombones e Eufônios",
         "size": 8,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Trombone I (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 24, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Trombone II (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 75, "pan": 36, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Trombone III (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 48, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Euphonium I (8ve)", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 80, "pan": 60, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Trombone I", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 24, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Trombone II", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 75, "pan": 36, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Trombone III", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 48, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Euphonium I", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 80, "pan": 60, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Trombone IV", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 84, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Euphonium II", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 80, "pan": 96, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Trombone Baixo I", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 85, "pan": 112, "octave": 0},
@@ -353,14 +353,14 @@ COMBINATIONS_BRASS = [
         "name": "Octeto de French Horns (Trompas)",
         "size": 8,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Trompa I (8ve)", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 20, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Trompa II (8ve)", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 36, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Trompa I", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 20, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Trompa II ", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 36, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Trompa III", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 52, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Trompa IV", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 68, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Trompa V", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Trompa VI", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 80, "pan": 92, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Trompa VII", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 85, "pan": 112, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Trompa VIII", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 85, "pan": 120, "octave": 0}
+            {"voice": "Tenor",     "instrument_name": "Trompa V", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 50, "pan": 80, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Trompa VI", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 50, "pan": 92, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Trompa VII", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 50, "pan": 112, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Trompa VIII", "instrument_id": "brass.french-horn", "system_name": "Horn in F", "program": 60, "vol": 50, "pan": 120, "octave": 0}
         ]
     },
     {
@@ -403,12 +403,12 @@ COMBINATIONS_BRASS = [
         "name": "Orquestra de 12 Trombones e Eufônios",
         "size": 12,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Trombone I-1 (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 16, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Trombone I-2 (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 32, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Euphonium I-1 (8ve)", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 75, "pan": 48, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Trombone II-1 (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 40, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Trombone II-2 (8ve)", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 56, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Euphonium I-2 (8ve)", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 75, "pan": 72, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Trombone I-1 ", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 16, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Trombone I-2 ", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 32, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Euphonium I-1 ", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 75, "pan": 48, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Trombone II-1 ", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 40, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Trombone II-2 ", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 56, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Euphonium I-2 ", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 75, "pan": 72, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Trombone III-1", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 80, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Trombone III-2", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 96, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Euphonium II-1", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 75, "pan": 68, "octave": 0},
@@ -437,7 +437,7 @@ COMBINATIONS_BRASS = [
             {"voice": "Tenor",     "instrument_name": "Trombone I-1", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Trombone I-2", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 80, "pan": 64, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Euphonium I-1", "instrument_id": "brass.euphonium", "system_name": "Euphonium", "program": 57, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Baritone Horn", "instrument_id": "brass.baritone-horn", "system_name": "Baritone Horn", "program": 57, "vol": 75, "pan": 96, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Baritone Horn", "instrument_id": "brass.baritone-horn", "system_name": "Baritone Horn", "program": 57, "vol": 100, "pan": 96, "octave": 0},
             # Baixo (4 Tubas/Basses)
             {"voice": "Baixo",     "instrument_name": "Trombone Baixo I", "instrument_id": "brass.trombone", "system_name": "Trombone", "program": 57, "vol": 85, "pan": 60, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Tuba I", "instrument_id": "brass.tuba", "system_name": "Tuba", "program": 58, "vol": 85, "pan": 100, "octave": 0},
@@ -492,8 +492,8 @@ COMBINATIONS_PALETAS = [
         "name": "Quarteto de Clarinetes",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Clarinete I (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 32, "octave": 12},
-            {"voice": "Contralto", "instrument_name": "Clarinete II (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 48, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Clarinete I ", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 32, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Clarinete II ", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Clarinete III", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 85, "pan": 80, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Clarinete Baixo", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 85, "pan": 96, "octave": 0}
         ]
@@ -516,7 +516,7 @@ COMBINATIONS_PALETAS = [
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Sax Alto 1", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 85, "pan": 24, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Sax Alto 2", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 40, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Sax Tenor", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 85, "pan": 88, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Sax Tenor", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 100, "pan": 88, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Sax Baritono", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 104, "octave": 0}
         ]
     },
@@ -531,7 +531,7 @@ COMBINATIONS_PALETAS = [
             {"voice": "Contralto", "instrument_name": "Sax Alto I", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 52, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Sax Alto II", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 68, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Tenor I", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Sax Tenor II", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 92, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Sax Tenor II", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 100, "pan": 110, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Sax Baritono I", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 112, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Sax Baritono II", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 120, "octave": 0}
         ]
@@ -541,8 +541,8 @@ COMBINATIONS_PALETAS = [
         "name": "Octeto de Clarinetes (Clarinet Choir)",
         "size": 8,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Clarinete I (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 24, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Clarinete II (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 75, "pan": 38, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 24, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 75, "pan": 38, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete III", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 54, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete IV", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 68, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Clarinete V", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 82, "octave": 0},
@@ -572,7 +572,7 @@ COMBINATIONS_PALETAS = [
         "size": 8,
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Sax Soprano", "instrument_id": "sax.soprano", "system_name": "Soprano Sax", "program": 64, "vol": 80, "pan": 24, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Clarinete I (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 38, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Clarinete I ", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 38, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Sax Alto", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 54, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 68, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Tenor", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 82, "octave": 0},
@@ -598,7 +598,7 @@ COMBINATIONS_PALETAS = [
             {"voice": "Tenor",     "instrument_name": "Sax Tenor", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 75, "pan": 64, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 112, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Sax Baritono", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 120, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 80, "pan": 52, "octave": 0}
+            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 120, "pan": 52, "octave": 0}
         ]
     },
     {
@@ -608,10 +608,10 @@ COMBINATIONS_PALETAS = [
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Sax Soprano I", "instrument_id": "sax.soprano", "system_name": "Soprano Sax", "program": 64, "vol": 85, "pan": 16, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Sax Soprano II", "instrument_id": "sax.soprano", "system_name": "Soprano Sax", "program": 64, "vol": 85, "pan": 32, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Sax Alto 1 (8ve)", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 48, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Sax Alto 1", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Sax Alto 2", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 40, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Sax Alto 3", "instrument_id": "sax.alto", "system_name": "Alto Sax", "program": 65, "vol": 80, "pan": 56, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Sax Tenor 1 (8ve)", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 72, "octave": 12},
+            {"voice": "Contralto", "instrument_name": "Sax Tenor 1", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 72, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Tenor 2", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 80, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Tenor 3", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 96, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Baritono 1 (8ve)", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 75, "pan": 68, "octave": 12},
@@ -639,13 +639,13 @@ COMBINATIONS_PALETAS = [
             # Tenor
             {"voice": "Tenor",     "instrument_name": "Clarinete III", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Corne Ingles II", "instrument_id": "woodwind.reed.english-horn", "system_name": "Horns a6", "program": 69, "vol": 80, "pan": 64, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Sax Tenor I", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 80, "pan": 80, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Sax Tenor I", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 100, "pan": 80, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Sax Tenor II", "instrument_id": "sax.tenor", "system_name": "Tenor Sax", "program": 66, "vol": 75, "pan": 96, "octave": 0},
             # Baixo
             {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 60, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 100, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 100, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Sax Baritono I", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 112, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Sax Baritono II", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 85, "pan": 120, "octave": 0}
+            {"voice": "Baixo",     "instrument_name": "Sax Baritono II", "instrument_id": "sax.baritone", "system_name": "Baritone Sax", "program": 67, "vol": 100, "pan": 120, "octave": 0}
         ]
     },
     {
@@ -654,8 +654,8 @@ COMBINATIONS_PALETAS = [
         "size": 16,
         "tracks": [
             # Soprano (4 Clarinetes/Sax)
-            {"voice": "Soprano",   "instrument_name": "Clarinete I (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 20, "octave": 12},
-            {"voice": "Soprano",   "instrument_name": "Clarinete II (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 36, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 20, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 36, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Sax Soprano I", "instrument_id": "sax.soprano", "system_name": "Soprano Sax", "program": 64, "vol": 85, "pan": 52, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Sax Soprano II", "instrument_id": "sax.soprano", "system_name": "Soprano Sax", "program": 64, "vol": 80, "pan": 68, "octave": 0},
             # Contralto (4 Clarinetes/Sax)
@@ -684,10 +684,10 @@ COMBINATIONS_SOPROS = [
         "name": "Quarteto de Madeiras Clássico",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Flauta", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 32, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Oboe", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 48, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Clarinete", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 96, "octave": 0}
+            {"voice": "Soprano",   "instrument_name": "Flauta", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 32, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Oboe", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 100, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Clarinete", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 100, "pan": 80, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 96, "octave": 0}
         ]
     },
     {
@@ -695,10 +695,10 @@ COMBINATIONS_SOPROS = [
         "name": "Quarteto de Flautas (Flute Choir)",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Piccolo", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 32, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Piccolo", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 120, "pan": 32, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 48, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 96, "octave": 0}
+            {"voice": "Baixo",     "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 100, "pan": 96, "octave": 0}
         ]
     },
     {
@@ -706,9 +706,9 @@ COMBINATIONS_SOPROS = [
         "name": "Quarteto de Clarinete e Flauta",
         "size": 4,
         "tracks": [
-            {"voice": "Soprano",   "instrument_name": "Flauta 1", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 24, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Flauta 1", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 70, "pan": 24, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Flauta 2", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 40, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Clarinete 1", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 85, "pan": 88, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Clarinete 1", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 100, "vol": 85, "pan": 88, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Clarinete 2", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 85, "pan": 104, "octave": 0}
         ]
     },
@@ -719,8 +719,8 @@ COMBINATIONS_SOPROS = [
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Oboe 1", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 85, "pan": 32, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Oboe 2", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 48, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Fagote 1", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 80, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote 2", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 96, "octave": 0}
+            {"voice": "Tenor",     "instrument_name": "Fagote 1", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 80, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote 2", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 96, "octave": 0}
         ]
     },
     # ─── 8 INSTRUMENTOS (OCTETOS) ────────────────────────────────────────────
@@ -730,13 +730,13 @@ COMBINATIONS_SOPROS = [
         "size": 8,
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Piccolo", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 20, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 36, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 36, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Oboe I", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 52, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 68, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 80, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Corne Ingles", "instrument_id": "woodwind.reed.english-horn", "system_name": "Horns a6", "program": 69, "vol": 80, "pan": 92, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 112, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 80, "pan": 100, "octave": 0}
+            {"voice": "Tenor",     "instrument_name": "Corne Ingles", "instrument_id": "woodwind.reed.english-horn", "system_name": "Horns a6", "program": 100, "vol": 80, "pan": 92, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 112, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 100, "octave": 0}
         ]
     },
     {
@@ -746,12 +746,12 @@ COMBINATIONS_SOPROS = [
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Piccolo I", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 24, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Piccolo II", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 36, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 48, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 60, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 84, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Flauta IV", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 96, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Flauta V (8ve -12)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 112, "octave": -12},
-            {"voice": "Baixo",     "instrument_name": "Flauta VI (8ve -12)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 120, "octave": -12}
+            {"voice": "Contralto", "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 48, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 60, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 100, "pan": 84, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Flauta IV", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 100, "pan": 96, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Flauta V (8ve -12)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 100, "pan": 112, "octave": -12},
+            {"voice": "Baixo",     "instrument_name": "Flauta VI (8ve -12)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 100, "pan": 120, "octave": -12}
         ]
     },
     {
@@ -760,7 +760,7 @@ COMBINATIONS_SOPROS = [
         "size": 8,
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 20, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Clarinete I (8ve)", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 36, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 36, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 52, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 68, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 80, "octave": 0},
@@ -775,13 +775,13 @@ COMBINATIONS_SOPROS = [
         "size": 8,
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Piccolo", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 24, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 38, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 54, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 38, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 54, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Oboe I", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 68, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 82, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 94, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 112, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 120, "octave": 0}
+            {"voice": "Tenor",     "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 100, "pan": 82, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 100, "pan": 94, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 112, "octave": 0},
+            {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 120, "octave": 0}
         ]
     },
     # ─── 12 INSTRUMENTOS ─────────────────────────────────────────────────────
@@ -791,17 +791,17 @@ COMBINATIONS_SOPROS = [
         "size": 12,
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Piccolo", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 16, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 28, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 28, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Oboe I", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 40, "octave": 0},
-            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 52, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 52, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Oboe II", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 64, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 76, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 88, "octave": 0},
             {"voice": "Tenor",     "instrument_name": "Corne Ingles", "instrument_id": "woodwind.reed.english-horn", "system_name": "Horns a6", "program": 69, "vol": 80, "pan": 100, "octave": 0},
-            {"voice": "Tenor",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 75, "pan": 64, "octave": 0},
+            {"voice": "Tenor",     "instrument_name": "Fagote I", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 100, "pan": 64, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Fagote II", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 112, "octave": 0},
             {"voice": "Baixo",     "instrument_name": "Fagote III", "instrument_id": "woodwind.reed.bassoon", "system_name": "Bassoon", "program": 70, "vol": 85, "pan": 120, "octave": 0},
-            {"voice": "Baixo",     "instrument_name": "Clarinete Baixo", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 52, "octave": 0}
+            {"voice": "Baixo",     "instrument_name": "Clarinete Baixo", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 100, "pan": 52, "octave": 0}
         ]
     },
     {
@@ -811,7 +811,7 @@ COMBINATIONS_SOPROS = [
         "tracks": [
             {"voice": "Soprano",   "instrument_name": "Piccolo I", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 16, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Piccolo II", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 32, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Flauta I (8ve)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 48, "octave": 12},
+            {"voice": "Soprano",   "instrument_name": "Flauta I (8ve)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 48, "octave": 12},
             {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 40, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Flauta III", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 56, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Flauta IV (8ve)", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 72, "octave": 12},
@@ -831,11 +831,11 @@ COMBINATIONS_SOPROS = [
         "tracks": [
             # Soprano
             {"voice": "Soprano",   "instrument_name": "Piccolo I", "instrument_id": "woodwind.flutes.piccolo", "system_name": "Piccolo", "program": 72, "vol": 75, "pan": 20, "octave": 0},
-            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 85, "pan": 36, "octave": 0},
+            {"voice": "Soprano",   "instrument_name": "Flauta I", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 36, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Oboe I", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 52, "octave": 0},
             {"voice": "Soprano",   "instrument_name": "Clarinete I", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 68, "octave": 0},
             # Contralto
-            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 80, "pan": 40, "octave": 0},
+            {"voice": "Contralto", "instrument_name": "Flauta II", "instrument_id": "woodwind.flutes.flute", "system_name": "Flute", "program": 73, "vol": 60, "pan": 40, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Oboe II", "instrument_id": "woodwind.reed.oboe", "system_name": "Oboe", "program": 68, "vol": 80, "pan": 56, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Clarinete II", "instrument_id": "woodwind.reed.clarinet", "system_name": "Clarinet in Bb", "program": 71, "vol": 80, "pan": 72, "octave": 0},
             {"voice": "Contralto", "instrument_name": "Corne Ingles I", "instrument_id": "woodwind.reed.english-horn", "system_name": "Horns a6", "program": 69, "vol": 75, "pan": 88, "octave": 0},
@@ -1275,7 +1275,7 @@ def process_group(group_key, mid, voice_notes, speed, ph_start, ph_end, tempo, b
     output_dir = ROOT / "output" / "biblioteca-de-tombres-2" / info["folder"]
     
     if output_dir.exists():
-        shutil.rmtree(output_dir)
+        shutil.rmtree(output_dir, ignore_errors=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"\n========================================================")
