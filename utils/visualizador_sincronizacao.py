@@ -81,16 +81,20 @@ class LyricsEditorHandler(SimpleHTTPRequestHandler):
             if os.path.exists(full_p):
                 dirs.append(dp)
 
-        # Escanear outras subpastas em output
+        # Escanear recursivamente subpastas em output que contenham .json
         search_roots = ['output']
+        known_abs = {os.path.abspath(os.path.join(WORKSPACE_ROOT, d)) for d in dirs}
         for s_root in search_roots:
             full_s_root = os.path.join(WORKSPACE_ROOT, s_root)
             if os.path.exists(full_s_root):
-                for name in os.listdir(full_s_root):
-                    sub_p = os.path.join(full_s_root, name)
-                    if os.path.isdir(sub_p) and sub_p not in [os.path.join(WORKSPACE_ROOT, d) for d in default_paths]:
-                        rel_p = os.path.relpath(sub_p, WORKSPACE_ROOT)
-                        dirs.append(rel_p)
+                for dirpath, dirnames, filenames in os.walk(full_s_root):
+                    # Incluir somente diretórios que possuam ao menos um .json
+                    if any(f.endswith('.json') and not f.startswith('._') for f in filenames):
+                        abs_dp = os.path.abspath(dirpath)
+                        if abs_dp not in known_abs:
+                            rel_p = os.path.relpath(dirpath, WORKSPACE_ROOT)
+                            dirs.append(rel_p)
+                            known_abs.add(abs_dp)
 
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
