@@ -230,9 +230,22 @@ def render_phrase_nicho(mid, ph_start, ph_end, config, speed, bpm_target, work_d
 
     midi_tmp.unlink(missing_ok=True)
 
-    r = subprocess.run([MSCORE_BIN, '-o', str(mp3_raw), str(mscz_tmp)],
-                       capture_output=True, text=True)
-    
+    # Renderizar MP3 com retry (MuseScore pode crashar com SIGSEGV transiente)
+    MAX_RENDER_RETRIES = 3
+    r = None
+    for attempt in range(1, MAX_RENDER_RETRIES + 1):
+        r = subprocess.run([MSCORE_BIN, '-o', str(mp3_raw), str(mscz_tmp)],
+                           capture_output=True, text=True)
+
+        if mp3_raw.exists():
+            break  # Sucesso
+
+        # Crash transiente (rc=-11 = SIGSEGV, rc=-6 = SIGABRT, etc.)
+        if attempt < MAX_RENDER_RETRIES:
+            print(f'RETRY {attempt}/{MAX_RENDER_RETRIES} (rc={r.returncode})', end='  ')
+            import time as _time
+            _time.sleep(2)
+
     if partes_dir and mp3_raw.exists():
         shutil.copy(mp3_raw, partes_dir / f'F{phrase_idx:02d}_raw.mp3')
 
@@ -240,7 +253,8 @@ def render_phrase_nicho(mid, ph_start, ph_end, config, speed, bpm_target, work_d
 
     if not mp3_raw.exists():
         shutil.rmtree(pdir, ignore_errors=True)
-        print(f'ERRO MP3 (rc={r.returncode} pan={n_pan} stacc={n_stacc})')
+        print(f'ERRO MP3 (rc={r.returncode} pan={n_pan} stacc={n_stacc}) '
+              f'após {MAX_RENDER_RETRIES} tentativas')
         if r.stdout.strip(): print(f'  STDOUT: {r.stdout.strip()}')
         if r.stderr.strip(): print(f'  STDERR: {r.stderr.strip()}')
         return None

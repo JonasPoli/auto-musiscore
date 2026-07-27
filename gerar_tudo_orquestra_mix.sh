@@ -1,36 +1,34 @@
 #!/bin/bash
 
-# Script utilitário para gerar a orquestra híbrida dinâmica (todos os hinos e coros)
+# Script utilitário para gerar os 480 hinos e 6 coros nos estilos Orquestra 01 e Orquestra 02
 # Uso:
-#   ./gerar_tudo_nicho.sh [--speed-factor 1.0]
-#   ./gerar_tudo_nicho.sh --start 1 --end 5 --speed-factor 0.85 [--overwrite]
-#   ./gerar_tudo_nicho.sh --skip-coros   # pula geração dos coros
+#   ./gerar_tudo_orquestra_mix.sh [--speed-factor 1.0]
+#   ./gerar_tudo_orquestra_mix.sh --style orquestra01
+#   ./gerar_tudo_orquestra_mix.sh --style orquestra02
+#   ./gerar_tudo_orquestra_mix.sh --start 1 --end 10 --speed-factor 1.0
+#   ./gerar_tudo_orquestra_mix.sh --skip-coros
 #
-# Ao final, executa verificação de completude e tenta regerar faltantes.
+# Ao final, executa verificação de completude com retry automático.
 
-# Garante que estamos na pasta correta
 cd "$(dirname "$0")"
 
-# Verifica se o ambiente virtual existe
 if [ ! -d ".venv" ]; then
-    echo "❌ Erro: Ambiente virtual .venv não encontrado."
+    echo "❌ Erro: Ambiente virtual .venv não encontrado em $(pwd)"
     echo "Por favor, crie o ambiente virtual e instale as dependências antes de rodar."
     exit 1
 fi
 
-# Ativa o ambiente virtual
 source .venv/bin/activate
 
-echo "🎵 Iniciando a geração da orquestra híbrida dinâmica (hinos + coros)..."
-python utils/gerar_lote_nicho.py "$@"
+echo "🎵 Iniciando a geração dos estilos Orquestra 01 e Orquestra 02 (Hinos + Coros)..."
+python -u utils/gerar_lote_orquestra_mix.py "$@"
 GEROU_RC=$?
 
 echo ""
 echo "══════════════════════════════════════════════════════════════════"
-echo "  🔍 Verificação de completude (com retry automático)..."
+echo "  🔍 Verificação de completude Orquestra Mix com retry..."
 echo "══════════════════════════════════════════════════════════════════"
 
-# Extrair --speed-factor dos argumentos se presente
 SPEED_FACTOR="1.0"
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -44,16 +42,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-python utils/verificar_completude_nicho.py --regerar --max-retries 2 --speed-factor "$SPEED_FACTOR"
+python -u utils/verificar_completude_orquestra_mix.py --regerar --max-retries 2 --speed-factor "$SPEED_FACTOR"
 VERIF_RC=$?
 
 if [ $VERIF_RC -eq 0 ]; then
     echo ""
-    echo "✅ Pipeline completo! Todos os 480 hinos + 6 coros gerados em todos os nichos."
+    echo "✅ Pipeline completo! Todos os 480 hinos + 6 coros gerados com sucesso para Orquestra 01 e Orquestra 02."
 else
     echo ""
     echo "⚠️  Alguns itens ainda estão faltando após retry. Verifique o relatório acima."
 fi
 
 exit $VERIF_RC
-

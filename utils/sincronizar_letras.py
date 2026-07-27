@@ -378,7 +378,112 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
     return aligned_lines
 
 # ==============================================================================
-# 5. CLI E FLUXO PRINCIPAL
+# 5. RECONSTRUÇÃO DA LINHA DO TEMPO POR FRASE (PARTES)
+# ==============================================================================
+
+def reconstruir_linha_tempo_frases(midi_path: Path, mp3_path: Path, partes_dir: Path = None, bpm_target: float = None, speed_factor: float = 1.0, hino_id = None):
+    """
+    Reconstrói a cronologia exata em segundos do áudio concatenado a partir dos
+    arquivos FXX_trim.mp3 gerados na pasta de partes.
+    """
+    sys.path.insert(0, str(ROOT / 'utils'))
+    try:
+        import mido
+        from gerar_testes_timbre import detect_phrases
+        from gerar_hino_nicho_completo import get_tempo, ticks_to_sec, obter_duracao_mp3
+        from velocidade_hinos import HINOS
+    except ImportError:
+        return None
+
+    if partes_dir is None:
+        partes_dir = mp3_path.parent / f"{mp3_path.stem}_partes"
+
+    if not partes_dir.exists():
+        return None
+
+    try:
+        mid = mido.MidiFile(str(midi_path))
+    except Exception:
+        return None
+
+    tempo = get_tempo(mid)
+    bpm_orig = 60_000_000 / tempo
+    tpb = mid.ticks_per_beat
+
+    if bpm_target is None:
+        num_val = None
+        if hino_id:
+            hino_str = str(hino_id).strip()
+            if not hino_str.upper().startswith("C"):
+                try:
+                    num_val = int(hino_str)
+                except ValueError:
+                    pass
+        if num_val and num_val in HINOS:
+            bpm_base = HINOS[num_val][0]
+        else:
+            bpm_base = bpm_orig
+        bpm_target = bpm_base * speed_factor
+
+    tempo_new = int(60_000_000 / bpm_target)
+    phrases = detect_phrases(mid, tempo, min_phrase_seconds=6.0, silence_beats=0.4)
+    if not phrases:
+        return None
+
+    trimmed = {}
+    for i in range(len(phrases)):
+        f_path = partes_dir / f"F{i+1:02d}_trim.mp3"
+        if f_path.exists():
+            trimmed[i] = f_path
+
+    if not trimmed:
+        return None
+
+    succeeded = sorted(trimmed.keys())
+    sequence = []
+    frases_coladas_info = []
+
+    for k, orig_idx in enumerate(succeeded):
+        mp3_trimmed = trimmed[orig_idx]
+        dur_s = obter_duracao_mp3(mp3_trimmed)
+        inicio_s = ticks_to_sec(phrases[orig_idx][0], tempo_new, tpb)
+
+        if k > 0:
+            prev_inicio_s, prev_dur_s = frases_coladas_info[-1]
+            if orig_idx == succeeded[k-1] + 1:
+                gap_s = inicio_s - (prev_inicio_s + prev_dur_s)
+            else:
+                gap_s = 1.0
+            gap_s = max(0.01, gap_s)
+            sequence.append(('silence', gap_s))
+            frases_coladas_info[-1] = (prev_inicio_s, prev_dur_s + gap_s)
+
+        sequence.append(('phrase', orig_idx, dur_s))
+        frases_coladas_info.append((inicio_s, dur_s))
+
+    curr_t = 0.0
+    phrase_timings = {}
+    for item in sequence:
+        if item[0] == 'silence':
+            curr_t += item[1]
+        else:
+            orig_idx = item[1]
+            dur = item[2]
+            phrase_timings[orig_idx] = (curr_t, curr_t + dur)
+            curr_t += dur
+
+    return {
+        "phrases": phrases,
+        "phrase_timings": phrase_timings,
+        "tempo_new": tempo_new,
+        "tpb": tpb,
+        "total_dur": curr_t,
+        "bpm_orig": bpm_orig,
+        "bpm_target": bpm_target
+    }
+
+# ==============================================================================
+# 6. CLI E FLUXO PRINCIPAL
 # ==============================================================================
 
 def main():
@@ -388,6 +493,9 @@ def main():
     parser.add_argument("--mp3", required=True, help="Caminho para o arquivo MP3 gerado (orquestra)")
     parser.add_argument("--txt", help="Caminho explícito para o TXT da letra")
     parser.add_argument("--output", required=True, help="Caminho para salvar o JSON de saída")
+    parser.add_argument("--partes-dir", help="Caminho explícito para a pasta de partes geradas (_partes)")
+    parser.add_argument("--speed-factor", type=float, default=1.0, help="Fator de velocidade aplicado na geração")
+    parser.add_argument("--bpm-target", type=float, default=None, help="BPM alvo utilizado na geração")
     parser.add_argument("--skip-existing", action="store_true", help="Pular processamento se o arquivo de saída já existir")
     args = parser.parse_args()
 
@@ -411,7 +519,6 @@ def main():
                 num_val = int(hino_id_str[1:])
             except ValueError:
                 num_val = hino_id_str
-            # Coro 001- ou Coro 1-
             pattern = f"Coro {num_val:03d}- *.mid"
             midi_files = list(MIDI_DIR.glob(pattern))
             if not midi_files:
@@ -430,18 +537,15 @@ def main():
                 midi_files = []
             if not midi_files:
                 midi_files = list(MIDI_DIR.glob(f"*{hino_id_str}*.mid"))
-                # Pular coro se buscamos hino
                 midi_files = [f for f in midi_files if "coro" not in f.name.lower()]
         
         if midi_files:
             midi_path = midi_files[0]
             
-        # O TXT será resolvido por carregar_letra_hino via _indice.csv
-    else:
-        if args.midi:
-            midi_path = Path(args.midi)
-        if args.txt:
-            txt_path = Path(args.txt)
+    if not midi_path and args.midi:
+        midi_path = Path(args.midi)
+    if args.txt:
+        txt_path = Path(args.txt)
 
     if not midi_path or not midi_path.exists():
         print(f"[erro] Arquivo MIDI não encontrado ou não especificado.")
@@ -479,28 +583,81 @@ def main():
     intro_notes_count, intro_midi_duration = detectar_introducao(notes)
     print(f"   [midi] Introdução detectada: {intro_notes_count} notas (término em {intro_midi_duration:.2f}s no MIDI).")
 
-    # 5. Estimar Velocidade / Alinhar Áudio
-    midi_onsets = np.array(sorted([n.start for n in notes]))
-    print("   [audio] Alinhando tempos do MIDI com o MP3 (estimando speed_scale)...")
-    alpha = estimar_speed_scale(midi_onsets, mp3_path)
-    estimated_speed = 1.0 / alpha
-    print(f"   [audio] Speed scale detectado (alpha): {alpha:.4f} (velocidade equivalente: {estimated_speed:.4f}x).")
+    # 5. Tentar Reconstrução por Frases (Pasta _partes)
+    partes_dir = Path(args.partes_dir) if args.partes_dir else None
+    recon = reconstruir_linha_tempo_frases(
+        midi_path, mp3_path, partes_dir=partes_dir,
+        bpm_target=args.bpm_target, speed_factor=args.speed_factor,
+        hino_id=hino_id
+    )
 
-    # 6. Mapear Frases e Gerar Tempos
-    print("   [sync] Distribuindo notas por frases e refinando limites dinamicamente...")
-    aligned_lines = mapear_letra_para_notes(letra, notes, intro_notes_count, alpha)
-    
-    # 7. Salvar JSON Final
+    if recon is not None:
+        print("   [sync] Utilizando reconstrução exata da linha de tempo por frase (pasta _partes)...")
+        phrases = recon["phrases"]
+        phrase_timings = recon["phrase_timings"]
+        tempo_new = recon["tempo_new"]
+        tpb = recon["tpb"]
+
+        audio_notes = []
+        for n in notes:
+            n_tick = pm.time_to_tick(n.start)
+            n_end_tick = pm.time_to_tick(n.end)
+
+            matched_p = None
+            for p_idx, (p_start, p_end) in enumerate(phrases):
+                if p_start <= n_tick <= p_end:
+                    matched_p = p_idx
+                    break
+            if matched_p is None:
+                matched_p = min(range(len(phrases)), key=lambda i: min(abs(n_tick - phrases[i][0]), abs(n_tick - phrases[i][1])))
+
+            p_start_tick, p_end_tick = phrases[matched_p]
+            fallback_start = (p_start_tick / tpb) * (tempo_new / 1_000_000.0)
+            fallback_end = (p_end_tick / tpb) * (tempo_new / 1_000_000.0)
+            p_audio_start, p_audio_end = phrase_timings.get(
+                matched_p,
+                (fallback_start, fallback_end)
+            )
+
+            if p_end_tick > p_start_tick:
+                frac_start = (n_tick - p_start_tick) / (p_end_tick - p_start_tick)
+                frac_end = (n_end_tick - p_start_tick) / (p_end_tick - p_start_tick)
+            else:
+                frac_start = frac_end = 0.0
+
+            t_start = p_audio_start + frac_start * (p_audio_end - p_audio_start)
+            t_end = p_audio_start + frac_end * (p_audio_end - p_audio_start)
+
+            audio_notes.append(pretty_midi.Note(velocity=n.velocity, pitch=n.pitch, start=t_start, end=t_end))
+
+        aligned_lines = mapear_letra_para_notes(letra, audio_notes, intro_notes_count, alpha=1.0)
+        alpha_used = recon["bpm_orig"] / recon["bpm_target"]
+        intro_audio_duration = audio_notes[intro_notes_count-1].end if intro_notes_count > 0 else 0.0
+    else:
+        # Fallback: Estimar velocidade global ou utilizar BPM alvo
+        midi_onsets = np.array(sorted([n.start for n in notes]))
+        print("   [audio] Alinhando tempos do MIDI com o MP3 (estimando speed_scale)...")
+        alpha = estimar_speed_scale(midi_onsets, mp3_path)
+        estimated_speed = 1.0 / alpha
+        print(f"   [audio] Speed scale detectado (alpha): {alpha:.4f} (velocidade equivalente: {estimated_speed:.4f}x).")
+
+        print("   [sync] Distribuindo notas por frases e refinando limites dinamicamente...")
+        aligned_lines = mapear_letra_para_notes(letra, notes, intro_notes_count, alpha)
+        alpha_used = alpha
+        intro_audio_duration = intro_midi_duration * alpha
+
+    # 6. Salvar JSON Final
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     if hino_id:
         hino_id_clean = str(hino_id).strip()
     else:
         is_coro = "coro" in midi_path.name.lower()
-        digits = re.search(r"\d+", midi_path.name).group()
+        digits_match = re.search(r"\d+", midi_path.name)
+        digits = digits_match.group() if digits_match else "1"
         hino_id_clean = f"C{int(digits)}" if is_coro else str(int(digits))
-    
+
     # Obter duração total do MP3
     cmd = [
         "ffprobe", "-v", "error",
@@ -512,15 +669,15 @@ def main():
     try:
         res = subprocess.run(cmd, capture_output=True, text=True)
         mp3_dur = float(res.stdout.strip())
-    except:
-        mp3_dur = notes[-1].end * alpha + 1.0
+    except Exception:
+        mp3_dur = notes[-1].end * alpha_used + 1.0
 
     output_data = {
         "hino": hino_id_clean,
         "titulo": letra["titulo"],
         "duracao_mp3": round(mp3_dur, 3),
-        "speed_scale": round(alpha, 4),
-        "intro_duration": round(intro_midi_duration * alpha, 3),
+        "speed_scale": round(alpha_used, 4),
+        "intro_duration": round(intro_audio_duration, 3),
         "letra": aligned_lines
     }
 

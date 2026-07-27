@@ -422,6 +422,11 @@ _MUSE_LOOKUP = {
     'voice.alto':         {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
     'voice.tenor':        {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
     'voice.bass':         {'uid': '22',  'instr_id': 'bass',        'name': 'Basses',              'setup': 'voices.choir.bass',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.aahs':         {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.oohs':         {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'voice.synth-choir':  {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'choir-aahs':         {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
+    'choir':              {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
     'soprano':            {'uid': '19',  'instr_id': 'soprano',     'name': 'Sopranos',            'setup': 'voices.choir.soprano',               'cat': 'Muse Choir',   'pack': 'Muse Choir'},
     'alto':               {'uid': '20',  'instr_id': 'alto',        'name': 'Altos',               'setup': 'voices.choir.alto',                  'cat': 'Muse Choir',   'pack': 'Muse Choir'},
     'tenor':              {'uid': '21',  'instr_id': 'tenor',       'name': 'Tenors',              'setup': 'voices.choir.tenor',                 'cat': 'Muse Choir',   'pack': 'Muse Choir'},
@@ -433,21 +438,6 @@ _MUSE_LOOKUP = {
 def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
     """
     Constrói o audiosettings.json completo (formato array MuseSounds) e injeta no MSCZ.
-
-    Descoberta do usuário: o MuseScore 4 CLI respeita `out.balance` no audiosettings.json
-    quando o arquivo usa o formato ARRAY com muse_sampler_sound_pack (MuseSounds).
-    O formato DICT (templates) e o formato array vazio são ignorados.
-
-    MuseSounds IDs extraídos do arquivo ajustado pelo próprio usuário:
-        strings.violin  → uid=103 (Violin 1 Solo, primary) / 104 (Violin 2 Solo, secondary)
-        strings.viola   → uid=105 (Viola Solo)
-        strings.cello   → uid=106 (Violoncello Solo)
-        brass.trumpet   → uid=110 (Trumpet)
-        brass.trombone  → uid=111 (Trombone)
-
-    Instrumentos sem UID conhecido → MS Basic (com balance correto igualmente).
-
-    Retorna: número de tracks com balance != 0 (com pan aplicado).
     """
     import json as _json
 
@@ -458,7 +448,6 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
     def cc10_to_balance(cc10: int) -> float:
         return -1.0 if cc10 < 64 else 1.0
 
-    # ── Lê MSCX ───────────────────────────────────────────────────────────────
     audio_settings = None
     with zipfile.ZipFile(mscz_path, 'r') as zin:
         names     = zin.namelist()
@@ -479,16 +468,13 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
     except ET.ParseError:
         return 0
 
-    # Extrai parts em ordem: (partId, instrumentId_mscx, midiChannel)
-    # Fallback ao índice sequencial quando <midiChannel> não existe (ex: sopros de madeira)
-    # pois o MuseScore importa Parts na ordem dos canais MIDI → Part 0 = canal 0, etc.
     parts = []
     part_idx = 0
     for part in root.findall('.//Part'):
         pid = part.get('id', '')
         for inst in part.findall('Instrument'):
             iid_mscx = inst.findtext('instrumentId', '')
-            midi_ch_val = part_idx  # fallback: índice da Part
+            midi_ch_val = part_idx
             for ch_selector in ("Channel[@name='arco']", "Channel[@name='normal']", 'Channel'):
                 ch = inst.find(ch_selector)
                 if ch is not None:
@@ -497,7 +483,7 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
                         try:
                             midi_ch_val = int(el.text)
                         except (ValueError, TypeError):
-                            pass  # mantém fallback por índice
+                            pass
                     break
             parts.append((pid, iid_mscx, midi_ch_val))
             part_idx += 1
@@ -505,14 +491,17 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
     if not parts:
         return 0
 
-
-    # ── Constrói/Atualiza tracks do audiosettings.json ─────────────────────────
     occurrence: dict = {}
     n_panned = 0
 
     AUX_SENDS = [
         {'active': True, 'signalAmount': 0.4000000059604645},
         {'active': True, 'signalAmount': 0.30000001192092896},
+    ]
+
+    CHOIR_AUX_SENDS = [
+        {'active': True, 'signalAmount': 0.85},
+        {'active': True, 'signalAmount': 0.70},
     ]
 
     ordered_pans = channel_pan_map.get('ordered_pans', [])
@@ -533,34 +522,38 @@ def build_and_inject_audiosettings_pan(mscz_path, channel_pan_map: dict) -> int:
             return 'grand-piano'
         return short
 
-    # Dicionário de mapeamento partId -> (iid_mscx, midi_ch, idx)
     part_map = {pid: (iid_mscx, midi_ch, idx) for idx, (pid, iid_mscx, midi_ch) in enumerate(parts)}
 
-    # Se já temos o audiosettings.json gerado nativamente pelo MuseScore E ele contém tracks válidas, apenas atualizamos!
     if audio_settings and 'tracks' in audio_settings and len(audio_settings['tracks']) > 0:
         for track in audio_settings['tracks']:
             pid = track.get('partId')
             if pid in part_map:
                 iid_mscx, midi_ch, idx = part_map[pid]
                 
-                # Pan
                 pan_val = ordered_pans[idx] if ordered_pans and idx < len(ordered_pans) else channel_pan_map.get(midi_ch, 64)
                 balance = cc10_to_balance(pan_val)
                 if balance != 0.0:
                     n_panned += 1
                 
-                # Volume
                 vol_midi = 90
                 if ordered_vols and idx < len(ordered_vols):
                     vol_midi = ordered_vols[idx]
                 vol_db = -60.0 if vol_midi <= 0 else 20 * _math.log10(vol_midi / 90.0)
                 vol_db = max(-20.0, min(6.0, vol_db))
                 
-                # Configura out
+                occ = occurrence.get(iid_mscx, 0)
+                occurrence[iid_mscx] = occ + 1
+                
+                muse_info = _MUSE_LOOKUP.get(iid_mscx)
+                if isinstance(muse_info, list):
+                    muse_info = muse_info[min(occ, len(muse_info) - 1)]
+
+                is_choir = (muse_info and muse_info.get('cat') == 'Muse Choir') or any(k in iid_mscx for k in ('voice', 'choir', 'soprano', 'alto', 'tenor', 'bass'))
+
                 track['out'] = track.get('out', {})
                 track['out']['balance'] = balance
                 track['out']['volumeDb'] = vol_db
-                track['out']['auxSends'] = AUX_SENDS
+                track['out']['auxSends'] = CHOIR_AUX_SENDS if is_choir else AUX_SENDS
                 track['soloMuteState'] = track.get('soloMuteState', {'mute': False, 'solo': False})
                 
                 # Injeta Sampler / SoundFont

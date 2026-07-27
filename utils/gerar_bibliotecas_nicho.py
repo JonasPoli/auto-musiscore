@@ -1173,10 +1173,11 @@ def build_combo_midi(mid, voice_notes, config, speed=0.55, phrase_start=0):
     voice_delays = {"Soprano": 0.0, "Contralto": 0.0, "Tenor": 0.0, "Baixo": 0.0}
 
     for ch_idx, track_conf in enumerate(config["tracks"]):
-        voice = track_conf["voice"]
-        notes = voice_notes.get(voice, [])
-        if not notes:
-            continue
+        voice_spec = track_conf["voice"]
+        if isinstance(voice_spec, list):
+            voice_list = voice_spec
+        else:
+            voice_list = [voice_spec]
 
         midi_ch = MELODIC_CHANNELS[ch_idx % len(MELODIC_CHANNELS)]
         pan = track_conf["pan"]
@@ -1194,42 +1195,53 @@ def build_combo_midi(mid, voice_notes, config, speed=0.55, phrase_start=0):
             mido.Message('control_change', channel=midi_ch, control=11, value=127,  time=0),
         ]
 
-        # Parâmetros de ataque pós-pausa
-        attack_vel    = 10
-        cc11_start    = 40
-        delay_ticks   = seconds_to_ticks(voice_delays[voice], tempo_new, tpb)
+        # Parâmetros de ataque pós-pausa escalados pelo volume da track
+        vol_ratio     = vol / 85.0
+        attack_vel    = max(1, int(10 * vol_ratio))
+        cc11_start    = max(5, int(40 * vol_ratio))
+        cc11_max      = max(10, int(100 * vol_ratio))
 
-        for i, (note, on_t, off_t, vel) in enumerate(notes):
-            dur = remove_staccato(off_t - on_t, tpb)
-            is_after_pause  = (i == 0) or (on_t - notes[i-1][2] >= tpb * 0.25)
-            is_before_pause = (i < len(notes)-1) and (notes[i+1][1] - off_t >= tpb * 0.25)
-            if is_before_pause:
-                dur = int(dur * 0.70)
-            on_new  = (on_t - phrase_start) + delay_ticks
-            off_new = on_new + max(15, dur)
-            
-            next_start = None
-            for nj in notes[i+1:]:
-                if nj[1] > on_t:
-                    next_start = (nj[1] - phrase_start) + delay_ticks
-                    break
-            if next_start is not None and off_new > next_start:
-                off_new = max(on_new + 5, next_start)
+        for v_name in voice_list:
+            notes = voice_notes.get(v_name, [])
+            if not notes:
+                continue
+
+            delay_ticks = seconds_to_ticks(voice_delays.get(v_name, 0.0), tempo_new, tpb)
+
+            for i, (note, on_t, off_t, vel) in enumerate(notes):
+                dur = remove_staccato(off_t - on_t, tpb)
+                is_after_pause  = (i == 0) or (on_t - notes[i-1][2] >= tpb * 0.25)
+                is_before_pause = (i < len(notes)-1) and (notes[i+1][1] - off_t >= tpb * 0.25)
+                if is_before_pause:
+                    dur = int(dur * 0.70)
+                on_new  = (on_t - phrase_start) + delay_ticks
+                off_new = on_new + max(15, dur)
                 
-            v_note  = attack_vel if is_after_pause else min(127, max(1, vel))
+                next_start = None
+                for nj in notes[i+1:]:
+                    if nj[1] > on_t:
+                        next_start = (nj[1] - phrase_start) + delay_ticks
+                        break
+                if next_start is not None and off_new > next_start:
+                    off_new = max(on_new + 5, next_start)
+                    
+                scaled_vel = min(127, max(1, int(vel * vol_ratio)))
+                v_note     = min(attack_vel, scaled_vel) if is_after_pause else scaled_vel
+                v_note     = min(127, max(1, v_note))
+                final_note = min(127, max(0, note + octave_shift))
 
-            all_events.append(mido.Message('note_on',  channel=midi_ch, note=note + octave_shift,
-                                           velocity=v_note, time=on_new))
-            all_events.append(mido.Message('note_off', channel=midi_ch, note=note + octave_shift,
-                                           velocity=0, time=off_new))
-            if is_after_pause:
-                # Rampa CC11 de 40 a 100 ao longo de 225ms
-                ramp = seconds_to_ticks(0.225, tempo_new, tpb)
-                for step in range(5):
-                    t_cc = on_new + int((step / 4) * ramp)
-                    cc_val = int(cc11_start + (step / 4) * (100 - cc11_start))
-                    all_events.append(mido.Message('control_change', channel=midi_ch,
-                                                    control=11, value=cc_val, time=t_cc))
+                all_events.append(mido.Message('note_on',  channel=midi_ch, note=final_note,
+                                               velocity=v_note, time=on_new))
+                all_events.append(mido.Message('note_off', channel=midi_ch, note=final_note,
+                                               velocity=0, time=off_new))
+                if is_after_pause:
+                    # Rampa CC11 de cc11_start a cc11_max ao longo de 225ms
+                    ramp = seconds_to_ticks(0.225, tempo_new, tpb)
+                    for step in range(5):
+                        t_cc = on_new + int((step / 4) * ramp)
+                        cc_val = max(0, min(127, int(cc11_start + (step / 4) * (cc11_max - cc11_start))))
+                        all_events.append(mido.Message('control_change', channel=midi_ch,
+                                                        control=11, value=cc_val, time=t_cc))
 
     setup = [m for m in all_events if m.time == 0]
     music = sorted([m for m in all_events if m.time > 0], key=lambda m: m.time)
