@@ -324,6 +324,7 @@ def gerar_hino_orquestra01(midi_path: str, output_mp3: str, bpm_target: float = 
             '--midi', str(midi_path),
             '--mp3', str(out_path),
             '--output', str(json_path),
+            '--partes-dir', str(partes_dir),
             '--bpm-target', str(bpm_target),
             '--speed-factor', str(speed)
         ], capture_output=True, text=True)

@@ -137,7 +137,8 @@ def carregar_letra_hino(hino_id, txt_path: Path = None) -> dict:
         'titulo': titulo,
         'verses': verses,
         'chorus': chorus,
-        'final': final
+        'final': final,
+        'is_coro': is_coro
     }
 
 # ==============================================================================
@@ -263,41 +264,79 @@ def estimar_speed_scale(midi_onsets, mp3_path):
 def process_lines_timing(notes_segment, lines, alpha):
     L = len(lines)
     P = len(notes_segment)
+    if P == 0:
+        return []
+    
     char_counts = [len(l) for l in lines]
     C_total = sum(char_counts)
     
+    # Identificar se existem pausas notáveis (rest gaps >= 0.150s) entre frases musicais
+    gap_indices = []
+    for i in range(1, P):
+        g = notes_segment[i].start - notes_segment[i-1].end
+        if g >= 0.150:
+            gap_indices.append((i, g))
+            
+    gap_indices.sort(key=lambda x: x[1], reverse=True)
+    major_gaps = [g[0] for g in gap_indices]
+    
     boundaries = [0]
     for j in range(1, L):
-        expected_b = int(P * sum(char_counts[:j]) / C_total)
-        best_b = expected_b
-        max_gap = -1.0
+        expected_b_char = int(P * sum(char_counts[:j]) / C_total) if C_total > 0 else int(P * j / L)
+        expected_b_note = int(P * j / L)
+        expected_b = int(0.5 * expected_b_char + 0.5 * expected_b_note)
         
-        search_min = max(boundaries[-1] + 1, expected_b - 5)
-        search_max = min(P - (L - j), expected_b + 5)
+        search_min = max(boundaries[-1] + 1, expected_b - 8)
+        search_max = min(P - (L - j), expected_b + 8)
+        
+        best_b = expected_b
+        max_score = -999.0
         
         for idx in range(search_min, search_max + 1):
             gap = notes_segment[idx].start - notes_segment[idx-1].end
-            score = gap - 0.02 * abs(idx - expected_b)
-            if score > max_gap:
-                max_gap = score
+            gap_bonus = 5.0 * gap if gap >= 0.050 else gap
+            score = gap_bonus - 0.03 * abs(idx - expected_b)
+            if score > max_score:
+                max_score = score
                 best_b = idx
         boundaries.append(best_b)
     boundaries.append(P)
     
     line_timings = []
+    prev_end = 0.0
     for j in range(L):
-        start_note = notes_segment[boundaries[j]]
-        end_note = notes_segment[boundaries[j+1] - 1]
+        s_idx = boundaries[j]
+        e_idx = boundaries[j+1] - 1
+        start_note = notes_segment[s_idx]
+        end_note = notes_segment[e_idx]
         
-        t_start = start_note.start * alpha
-        t_end = end_note.end * alpha
+        raw_start = start_note.start * alpha
+        raw_end = end_note.end * alpha
+        
+        # Verificar se existe pausa/silêncio antes desta linha
+        has_prior_gap = False
+        if s_idx > 0:
+            prior_gap = notes_segment[s_idx].start - notes_segment[s_idx-1].end
+            if prior_gap >= 0.150:
+                has_prior_gap = True
+                
+        # Lead-in (antecipação para leitura): 550ms para pausas principais, 250ms para linhas contínuas
+        lead_in = 0.550 if has_prior_gap else 0.250
+        t_start = max(prev_end, raw_start - lead_in) if j > 0 else max(0.0, raw_start - lead_in)
         
         if boundaries[j+1] < P:
-            next_start = notes_segment[boundaries[j+1]].start * alpha
-            t_end = min(t_end + 0.5, next_start - 0.05)
-        else:
-            t_end = t_end + 0.5
+            next_start_note = notes_segment[boundaries[j+1]]
+            next_raw_start = next_start_note.start * alpha
+            next_has_gap = (next_start_note.start - end_note.end) >= 0.150
+            next_lead_in = 0.550 if next_has_gap else 0.250
             
+            target_next_start = max(t_start + 0.5, next_raw_start - next_lead_in)
+            t_end = min(raw_end + 0.200, target_next_start - 0.050)
+            t_end = max(t_start + 0.4, t_end)
+        else:
+            t_end = raw_end + 0.500
+            
+        prev_end = t_end
         line_timings.append({
             "texto": lines[j],
             "inicio": round(t_start, 3),
@@ -311,8 +350,14 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
     verses = letra['verses']
     chorus = letra['chorus']
     final = letra.get('final')
+    is_coro = letra.get('is_coro', False)
     
-    total_blocks = len(verses)
+    # Se for coro e tiver apenas 1 estrofe na letra, a orquestração repete o coro em 2 passagens
+    if is_coro and len(verses) == 1:
+        total_blocks = 2
+    else:
+        total_blocks = len(verses)
+        
     notes_per_block = len(singing_notes) // total_blocks
     
     aligned_lines = []
@@ -321,6 +366,8 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
     for block_idx in range(total_blocks):
         block_notes = singing_notes[current_note_idx : current_note_idx + notes_per_block]
         current_note_idx += notes_per_block
+
+        current_verses = verses[0] if (is_coro and len(verses) == 1) else verses[block_idx]
 
         has_second_part = False
         if block_idx == total_blocks - 1 and final:
@@ -334,7 +381,7 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
 
         if has_second_part:
             # Dividir o bloco em Verso e Coro/Final
-            char_count_v = sum(len(l) for l in verses[block_idx])
+            char_count_v = sum(len(l) for l in current_verses)
             char_count_c = sum(len(l) for l in second_part_lines)
             f = char_count_v / (char_count_v + char_count_c)
             expected_n_v = int(len(block_notes) * f)
@@ -355,7 +402,7 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
             c_notes = block_notes[best_split:]
 
             # Adicionar tempos do Verso
-            v_timings = process_lines_timing(v_notes, verses[block_idx], alpha)
+            v_timings = process_lines_timing(v_notes, current_verses, alpha)
             for item in v_timings:
                 item["tipo"] = "verso"
                 item["num_verso"] = block_idx + 1
@@ -369,7 +416,7 @@ def mapear_letra_para_notes(letra: dict, notes: list, intro_notes_count: int, al
                 aligned_lines.append(item)
         else:
             # Sem coro/final
-            v_timings = process_lines_timing(block_notes, verses[block_idx], alpha)
+            v_timings = process_lines_timing(block_notes, current_verses, alpha)
             for item in v_timings:
                 item["tipo"] = "verso"
                 item["num_verso"] = block_idx + 1
